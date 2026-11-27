@@ -22,7 +22,7 @@
   .title h1{margin:2px 0 0;font-size:clamp(1.5rem,5vw,2.3rem)}
   .motto{margin:14px 0 8px;font-weight:800}
   .crew{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin:6px 0 14px}
-  .crew span{font-size:1.9rem;background:rgba(255,255,255,.6);border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s}
+  .crew span{font-size:1.5rem;background:rgba(255,255,255,.6);border-radius:50%;width:42px;height:42px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s}
   .crew span:hover{transform:translateY(-4px)}
   .village{display:flex;justify-content:center;align-items:flex-end;gap:6px;height:120px;margin-top:6px}
   .house{position:relative;width:min(13vw,96px);border-radius:4px 4px 0 0}
@@ -65,6 +65,20 @@
   .game h4{margin:0 0 4px;font-size:1.05rem}
   .game p{margin:0 0 10px;font-size:.88rem;line-height:1.45}
   .quiz{--c:#1368ce;background:#eaf3ff;border-color:#1368ce}
+  /* 활동 정리 */
+  .act{margin-top:28px;background:#fff;border:4px solid #1e88a8;border-radius:20px;padding:18px}
+  .act h2{margin:0 0 4px;font-size:1.35rem}
+  .act .lead{margin:0 0 14px;color:#555;font-size:.92rem;line-height:1.5}
+  .q3{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+  .q3 a{display:block;border-radius:16px;padding:16px;color:#fff;box-shadow:0 5px 0 rgba(0,0,0,.15);transition:transform .15s}
+  .q3 a:hover{transform:translateY(-3px)}
+  .q3 .ic{font-size:2.2rem}
+  .q3 b{display:block;font-size:1.1rem;margin:4px 0}
+  .q3 span{font-size:.86rem;opacity:.95;line-height:1.45;display:block}
+  .q3 em{display:inline-block;margin-top:10px;background:#fff;color:#333;font-style:normal;font-weight:800;border-radius:20px;padding:4px 12px;font-size:.85rem}
+  .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:14px}
+  .steps div{background:#f2fafc;border-radius:12px;padding:10px 12px;font-size:.88rem;line-height:1.5}
+  .steps b{display:block}
   footer{text-align:center;font-size:.85rem;color:#888;padding:10px 0 30px}
   /* QR */
   .modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:9}
@@ -90,7 +104,7 @@
   <div class="cloud" style="top:40px;right:22%;width:52px"></div>
   <button class="qr-btn" onclick="openQR()">QR</button>
   <div class="title"><small>역사는 삶이다!</small><h1>춘쌤의 한국사 자료실</h1></div>
-  <p class="motto">시대별 친구들과 떠나는 역사 시간여행 · 내 삶의 주인공은 나!</p>
+  <p class="motto">강좌마다 다른 친구가 안내하는 역사 시간여행 · 내 삶의 주인공은 나!</p>
   <div class="crew" id="crew"></div>
   <div class="village" id="village"></div>
   <div class="ground"></div>
@@ -121,6 +135,24 @@
     <div class="track" id="track2"></div>
     <div class="games" id="games2"></div>
   </section>
+
+  <section class="act" id="activity">
+    <h2>🧩 활동 정리 · Quest 3 AI 멘토링으로 배움 연결하기</h2>
+    <p class="lead">수업이 끝나면 셋 중 <b>하나를 골라</b> 직접 풀어 보세요. 학습지의 QR 코드와 같은 곳으로 연결돼요. 결과는 패들렛에 올려요!</p>
+    <div class="q3">
+      <a href="https://m.site.naver.com/2bMqH" target="_blank" rel="noopener" style="background:#7b5cc4">
+        <div class="ic">🤖</div><b>AI 멘토링</b><span>AI를 가르치기 · 오늘 배운 내용을 내가 선생님이 되어 AI에게 설명해요</span><em>시작하기 ▶</em></a>
+      <a href="https://m.site.naver.com/2brq7" target="_blank" rel="noopener" style="background:#d84315">
+        <div class="ic">🕵️</div><b>한국사 명탐정</b><span>팩트체크 · 역사 속 주장이 사실인지 증거를 찾아 판단해요</span><em>시작하기 ▶</em></a>
+      <a href="https://m.site.naver.com/2btB4" target="_blank" rel="noopener" style="background:#2e7d32">
+        <div class="ic">📝</div><b>한국사 멘토링</b><span>문제 풀기 · 문제를 풀며 오늘 배운 내용을 점검해요</span><em>시작하기 ▶</em></a>
+    </div>
+    <div class="steps">
+      <div><b>① 나와 연결하기</b>나는 수업을 통해 (     )을/를 발견했다. 발견한 것과 이유 쓰기</div>
+      <div><b>② 셀프 문제 출제</b>O·X 문제 3개를 직접 만들어 보기</div>
+      <div><b>③ 패들렛 업로드</b>고른 활동의 결과를 캡처해서 패들렛에 올리기</div>
+    </div>
+  </section>
 </main>
 
 <footer>자료는 수업에 맞춰 업데이트돼요 · 문의는 춘쌤에게 · 평택마이스터고등학교</footer>
@@ -138,59 +170,65 @@
 <script>
 /* ── 시대별 안내 캐릭터 ── */
 const ERAS = {
-  guide:   { emoji:"🧑‍🏫", name:"춘쌤",   role:"시간여행 안내자",        c:"#e85d3f", bg:"#fff1ec", house:"#ffb199" },
-  ancient: { emoji:"🪨",  name:"뗀돌이", role:"선사·삼국 · 구석기 소년",  c:"#a0703c", bg:"#f8eee2", house:"#e3b98a" },
-  nambuk:  { emoji:"🌊",  name:"해동이", role:"남북국 · 발해 소녀",       c:"#1e88a8", bg:"#e5f5fa", house:"#8fd0e3" },
-  goryeo:  { emoji:"🏺",  name:"청자",   role:"고려 · 벽란도 도공",       c:"#3b9a8a", bg:"#e4f5f1", house:"#9fdccd" },
-  joseon:  { emoji:"📜",  name:"훈민이", role:"조선 · 집현전 선비",       c:"#7b5cc4", bg:"#efeafb", house:"#c3b2ee" },
-  modern:  { emoji:"📰",  name:"개화",   role:"개항기 · 신문 기자",       c:"#c2185b", bg:"#fce8f0", house:"#f3a1c0" },
-  heritage:{ emoji:"🏛️", name:"유산이", role:"주제탐구 · 문화유산 탐험가", c:"#c78b00", bg:"#fff5d9", house:"#ffd772" },
-  indep:   { emoji:"✊",  name:"만세",   role:"일제강점기 · 독립운동 학생", c:"#d64933", bg:"#fdebe7", house:"#f4a291" },
-  today:   { emoji:"🕊️", name:"평화",   role:"현대 · 민주시민",          c:"#2e7d32", bg:"#e8f5e9", house:"#9ed6a0" }
+  guide:  { emoji:"🧑‍🏫", name:"춘쌤",   role:"시간여행 안내자",            c:"#e85d3f", bg:"#fff1ec" },
+  l1:  { emoji:"🪨", name:"뗀돌이", role:"구석기 소년",                c:"#a0703c", bg:"#f8eee2" },
+  l2:  { emoji:"🌊", name:"해동이", role:"발해 소녀",                  c:"#1e88a8", bg:"#e5f5fa" },
+  l3:  { emoji:"🏺", name:"청자",   role:"고려 도공",                  c:"#3b9a8a", bg:"#e4f5f1" },
+  l4:  { emoji:"🛡️", name:"강동이", role:"거란과 맞선 고려 병사",       c:"#2f7f6f", bg:"#e2f2ee" },
+  l5:  { emoji:"⚔️", name:"삼별이", role:"몽골에 맞선 삼별초 병사",     c:"#5d6d3a", bg:"#eef2e2" },
+  l6:  { emoji:"📜", name:"훈민이", role:"집현전 선비",                c:"#7b5cc4", bg:"#efeafb" },
+  l7:  { emoji:"🐢", name:"거북이", role:"양난 속 조선 수군",           c:"#5a48a8", bg:"#ebe8f8" },
+  l8:  { emoji:"🏯", name:"경복이", role:"경복궁 중건 장인",            c:"#b0473a", bg:"#fbeae7" },
+  l9:  { emoji:"⚓", name:"개항이", role:"개항장 통역관",              c:"#c2185b", bg:"#fce8f0" },
+  l10: { emoji:"🌾", name:"녹두",   role:"동학 농민군",                c:"#8a7a12", bg:"#f8f4dc" },
+  l11: { emoji:"📰", name:"개화",   role:"독립신문 기자",              c:"#ad1457", bg:"#fbe6ef" },
+  l12: { emoji:"📨", name:"전령이", role:"헤이그 특사 소식을 전한 전령", c:"#6d4c41", bg:"#f3ebe8" },
+  l13: { emoji:"🔥", name:"의병이", role:"나라를 지킨 의병",            c:"#d84315", bg:"#fdece5" },
+  l14: { emoji:"🏛️", name:"유산이", role:"문화유산 탐험가",            c:"#c78b00", bg:"#fff5d9" },
+  indep:{ emoji:"✊", name:"만세",   role:"일제강점기 · 독립운동 학생",  c:"#d64933", bg:"#fdebe7" },
+  today:{ emoji:"🕊️", name:"평화",   role:"현대 · 민주시민",            c:"#2e7d32", bg:"#e8f5e9" }
 };
 
-/* ── 강좌 데이터 (학습지 목차 기준) ── */
+/* ── 강좌 데이터 (학습지 목차 그대로) ── */
+const L = (n, title, p, q, f, say, extra) => ({ era:"l"+n, title:`${n}강. ${title}`, sub:`교과서 ${p}쪽`, say,
+  lessons:[{ no:`생각노트 ${n}`, t:title, p, q, f }, ...(extra||[])] });
 const BOOK1 = [
-  { era:"guide", title:"출발역 · 오리엔테이션", sub:"생각노트 사용법 · 나만의 ( ) 발견하기",
+  { era:"guide", title:"Intro. 역사에서 나만의 (    ) 발견하기", sub:"출발역 · 생각노트 사용법",
     say:"안녕! 나는 춘쌤이야. 역사는 외우는 게 아니라 <b>삶</b>이야. 나와 닮은 역사 인물부터 찾아볼까?",
     lessons:[
       { no:"가이드", t:"생각노트 활용 가이드 · 테마 게임 규칙", f:"h1-guide.pdf" },
       { no:"Intro", t:"역사에서 나만의 (    ) 발견하기", q:"나와 닮은 역사 인물은 누구일까?", f:"h1-00-intro.pdf" },
       { no:"전체", t:"2026 한국사 1 학습지 전체", f:"h1-all.pdf" }
     ]},
-  { era:"ancient", title:"돌도끼 마을", sub:"선사시대 ~ 삼국시대",
-    say:"우가! 나는 뗀돌이. 돌을 깨뜨려 도구를 만들던 시절부터 삼국이 경쟁하던 시대까지 안내할게!",
-    lessons:[{ no:"1강", t:"선사시대 ~ 삼국시대", p:"8~17", q:"왜 고조선을 배워야 할까?", f:"h1-01.pdf" }]},
-  { era:"nambuk", title:"해동성국 항구", sub:"남북국 시대(통일신라·발해)",
-    say:"바다 동쪽의 번성한 나라, 해동성국! 남쪽엔 신라, 북쪽엔 발해가 있었다는 걸 기억해 줘.",
-    lessons:[{ no:"2강", t:"남북국 시대(통일신라/발해)", p:"18~21", q:"왜 남북국 시대를 기억해야 할까?", f:"h1-02.pdf" }]},
-  { era:"goryeo", title:"벽란도 무역항", sub:"고려의 건국 ~ 대외관계와 지배층 변화",
-    say:"어서 와, 벽란도야! 외국 상인들이 '코리아'를 알게 된 곳이지. 거란·여진·몽골과 맞선 고려 이야기를 들려줄게.",
-    lessons:[
-      { no:"3강", t:"고려의 건국과 발전", p:"22~25", q:"왜 고려를 배워야 할까?", f:"h1-03.pdf" },
-      { no:"4강", t:"고려 전기의 대외관계와 지배층 변화 1", p:"26~28", q:"왜 고려의 외교정책을 배워야 할까?", f:"h1-04.pdf" },
-      { no:"5강", t:"고려 후기의 대외관계와 지배층 변화 2", p:"28~33", q:"무신정권과 몽골의 침입, 고려를 지킨 사람은 누구였을까?", f:"h1-05.pdf" }
-    ]},
-  { era:"joseon", title:"집현전 서당", sub:"조선 전기 ~ 조선 후기",
-    say:"에헴, 훈민이라 하오. 나라의 틀을 세운 조선 전기부터 양난 이후의 변화까지 함께 공부해 봅시다.",
-    lessons:[
-      { no:"6강", t:"조선 전기(건국과 발전 ~ 붕당의 형성)", p:"34~37", q:"왜 조선을 배워야 할까?", f:"h1-06.pdf" },
-      { no:"7강", t:"조선 후기(양난과 정치 변화)", p:"38~49", q:"왜 조선의 변화 과정에 주목해야 할까?", f:"h1-07.pdf" }
-    ]},
-  { era:"modern", title:"개항장 신문사", sub:"흥선대원군 ~ 국권 침탈과 저항",
-    say:"특종이요! 문이 열리고 세상이 뒤바뀌던 시대야. 기자의 눈으로 사건 현장을 취재해 보자!",
-    lessons:[
-      { no:"8강", t:"흥선대원군의 집권", p:"50~53 / 109", q:"흥선대원군을 배워야 하는 이유는?", f:"h1-08.pdf" },
-      { no:"미션", t:"2부 테마 게임 · 한국 근대사 인물 리스트", f:"h1-game2.pdf" },
-      { no:"9강", t:"강화도 조약 ~ 갑신정변", p:"110~120", q:"김옥균, 그는 왜 갑신정변을 일으켜야 했을까?", f:"h1-09.pdf" },
-      { no:"10강", t:"동학농민운동 ~ 갑오개혁", p:"122~131", q:"전봉준, 그는 왜 봉기를 일으켜야 했을까?", f:"h1-10.pdf" },
-      { no:"11강", t:"독립협회와 대한제국", p:"132~135", q:"서재필과 고종, 무엇이 조선을 위한 길이었을까?", f:"h1-11.pdf" },
-      { no:"12강", t:"일본의 대한제국 강제 병합", p:"136~139", q:"을사5적과 헤이그 특사는 어떻게 기억되고 있을까?", f:"h1-12.pdf" },
-      { no:"13강", t:"일본에 저항하다!", p:"140~147", q:"무엇이 그들을 의병으로 만든 것일까?", f:"h1-13.pdf" }
-    ]},
-  { era:"heritage", title:"문화유산 박물관", sub:"주제탐구 · 문화와 사상, 사회와 경제",
-    say:"시대를 가로질러 보물찾기! 문화유산과 경제·신분 제도의 변화를 주제별로 탐구해 보자.",
-    lessons:[{ no:"14강", t:"주제탐구(문화와 사상, 사회와 경제)", p:"60~105", q:"K-문화유산, 오늘 우리는 어떻게 재해석할까?", f:"h1-14.pdf" }]}
+  L(1, "선사시대 ~ 삼국시대", "8~17", "왜 고조선을 배워야 할까?", "h1-01.pdf",
+    "우가! 나는 뗀돌이. 돌을 깨뜨려 도구를 만들던 시절부터 삼국이 경쟁하던 시대까지 안내할게!"),
+  L(2, "남북국 시대(통일신라/발해)", "18~21", "왜 남북국 시대를 기억해야 할까?", "h1-02.pdf",
+    "바다 동쪽의 번성한 나라, 해동성국! 남쪽엔 신라, 북쪽엔 발해가 있었다는 걸 기억해 줘."),
+  L(3, "고려의 건국과 발전", "22~25", "왜 고려를 배워야 할까?", "h1-03.pdf",
+    "나는 청자를 빚는 도공이야. 후삼국을 다시 하나로 묶은 고려가 어떻게 나라의 틀을 세웠는지 보여 줄게."),
+  L(4, "고려 전기의 대외관계와 지배층 변화 1", "26~28", "왜 고려의 외교정책을 배워야 할까?", "h1-04.pdf",
+    "거란이 쳐들어왔을 때 나는 강동 6주를 지켰지! 칼과 말(외교)로 나라를 지킨 이야기를 들려줄게."),
+  L(5, "고려 후기의 대외관계와 지배층 변화 2", "28~33", "무신정권과 몽골의 침입, 고려를 지킨 사람은 누구였을까?", "h1-05.pdf",
+    "무신들이 강화도로 떠난 뒤에도 우리는 끝까지 싸웠어. 고려 후기의 격동을 함께 따라가 보자."),
+  L(6, "조선 전기(건국과 발전 ~ 붕당의 형성)", "34~37", "왜 조선을 배워야 할까?", "h1-06.pdf",
+    "에헴, 훈민이라 하오. 새 나라 조선이 어떤 틀을 세웠고 사림과 붕당은 어떻게 등장했는지 공부해 봅시다."),
+  L(7, "조선 후기(양난과 정치 변화)", "38~49", "왜 조선의 변화 과정에 주목해야 할까?", "h1-07.pdf",
+    "왜란과 호란, 두 번의 큰 전쟁을 겪은 조선은 어떻게 달라졌을까? 거북선을 타고 출발!"),
+  L(8, "흥선대원군의 집권", "50~53 / 109", "흥선대원군을 배워야 하는 이유는?", "h1-08.pdf",
+    "경복궁을 다시 짓느라 땀 흘리던 장인이야. 흥선대원군의 개혁과 통상 거부 이야기를 들어 볼래?",
+    [{ no:"미션", t:"2부 테마 게임 · 한국 근대사 인물 리스트", f:"h1-game2.pdf" }]),
+  L(9, "강화도 조약 ~ 갑신정변", "110~120", "김옥균, 그는 왜 갑신정변을 일으켜야 했을까?", "h1-09.pdf",
+    "항구의 문이 열렸어! 개항 이후 조선이 어떤 길을 두고 갈등했는지 현장에서 통역해 줄게."),
+  L(10, "동학농민운동 ~ 갑오개혁", "122~131", "전봉준, 그는 왜 봉기를 일으켜야 했을까?", "h1-10.pdf",
+    "사람이 곧 하늘이다! 들판의 농민들이 왜 일어섰는지, 그 뒤 무엇이 바뀌었는지 함께 보자."),
+  L(11, "독립협회와 대한제국", "132~135", "서재필과 고종, 무엇이 조선을 위한 길이었을까?", "h1-11.pdf",
+    "독립신문 기자 개화야! 만민 공동회의 함성과 대한제국 선포 현장을 취재해 볼까?"),
+  L(12, "일본의 대한제국 강제 병합", "136~139", "을사5적과 헤이그 특사는 어떻게 기억되고 있을까?", "h1-12.pdf",
+    "급한 소식이야! 국권을 빼앗기던 순간들과 그에 맞선 사람들의 이야기를 전하러 왔어."),
+  L(13, "일본에 저항하다!", "140~147", "무엇이 그들을 의병으로 만든 것일까?", "h1-13.pdf",
+    "총칼 앞에서도 물러서지 않았어. 의병과 애국 계몽 운동, 저항의 불꽃을 이어 가자!"),
+  L(14, "주제탐구(문화와 사상, 사회와 경제)", "60~105", "K-문화유산, 오늘 우리는 어떻게 재해석할까?", "h1-14.pdf",
+    "시대를 가로질러 보물찾기! 문화유산과 경제·신분 제도의 변화를 주제별로 탐구해 보자.")
 ];
 
 const BOOK2 = [
@@ -263,10 +301,10 @@ document.getElementById("games1").innerHTML = games(GAMES1);
 document.getElementById("games2").innerHTML = games(GAMES2);
 
 /* 위쪽 캐릭터 줄과 마을: 누르면 그 시대로 이동 */
-const order = ["ancient","nambuk","goryeo","joseon","modern","heritage","indep","today"];
+const order = ["l1","l2","l3","l4","l5","l6","l7","l8","l9","l10","l11","l12","l13","l14","indep","today"];
 document.getElementById("crew").innerHTML = order.map(k => `<span title="${ERAS[k].name} · ${ERAS[k].role}" onclick="goEra('${k}')">${ERAS[k].emoji}</span>`).join("");
-const heights = [58, 76, 66, 92, 70, 84, 62, 80];
-document.getElementById("village").innerHTML = order.map((k,i) => `<div class="house" style="height:${heights[i]}px;background:${ERAS[k].house}" title="${ERAS[k].name}"></div>`).join("");
+const houses = [["#e3b98a",58],["#8fd0e3",76],["#9fdccd",66],["#c3b2ee",92],["#f3a1c0",70],["#ffd772",84],["#f4a291",62],["#9ed6a0",80]];
+document.getElementById("village").innerHTML = houses.map(([c,h]) => `<div class="house" style="height:${h}px;background:${c}"></div>`).join("");
 
 function showPanel(id){
   document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.p === id));
