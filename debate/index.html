@@ -72,6 +72,8 @@
 <main class="wrap" id="app"></main>
 
 <script src="topics.js"></script>
+<script src="../top10.js"></script>
+<script>TOPICS.forEach(t => t.keywords = withTop10(t.id, t.keywords));</script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
 const app = document.getElementById("app");
@@ -96,7 +98,7 @@ const COUNTER = ["하지만","그러나","반면","물론","그런데","오히�
 const NOW = ["오늘","지금","현재","우리","요즘","나에게","사회"];
 const REAL = ["실제","당시","사실","결국","역사적"];
 const count = (t, ws) => ws.reduce((n,w)=>n+(String(t).split(w).length-1),0);
-const kwIn = t => T.keywords.filter(k => String(t).replace(/\s/g,"").includes(k.replace(/\s/g,"")));
+const kwIn = t => T.keywords.filter(k => kwNorm(t).includes(kwNorm(k)));
 const hasYear = t => /\d{3,4}\s*년/.test(t);
 
 /* ① 첫 화면 */

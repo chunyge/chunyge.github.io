@@ -71,6 +71,8 @@
 <main class="wrap" id="app"></main>
 
 <script src="people.js"></script>
+<script src="../top10.js"></script>
+<script>PEOPLE.forEach(p => p.keywords = withTop10(p.id, p.keywords));</script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
 const app = document.getElementById("app");
@@ -215,7 +217,7 @@ function classify(q){
     if (n > bestN) { best = t; bestN = n; }
   }
   // 이름·키워드만 물어본 경우: 아직 안 나온 '한 일' 답으로
-  if (!best && P.keywords.some(k => q.replace(/\s/g,"").includes(k.replace(/\s/g,"")))) best = "what";
+  if (!best && P.keywords.some(k => kwNorm(q).includes(kwNorm(k)))) best = "what";
   if (best && used.includes(best)) {
     const rest = ["why","what","hard","today","who"].filter(t => !used.includes(t) && TYPE_WORDS[t].some(w=>q.includes(w)));
     best = rest[0] || best;
@@ -334,10 +336,10 @@ function grade(o){
   const ans = ["a1","a2","a3"].map(k => (o[k]||"").trim());
   const all = ans.join(" ") + " " + (o.new||"");
   const deepQ = asked.filter(a => DEEP.some(w => a.q.includes(w))).length;
-  const specQ = asked.filter(a => P.keywords.some(k => a.q.replace(/\s/g,"").includes(k.replace(/\s/g,"")))).length;
+  const specQ = asked.filter(a => P.keywords.some(k => kwNorm(a.q).includes(kwNorm(k)))).length;
   const rates = ans.map((t,i) => t.length >= 15 ? copyRate(t, asked[i].a) : 1);
   const avgRate = rates.reduce((s,x)=>s+x,0) / 3;
-  const kw = P.keywords.filter(k => all.replace(/\s/g,"").includes(k.replace(/\s/g,"")));
+  const kw = P.keywords.filter(k => kwNorm(all).includes(kwNorm(k)));
   const years = (all.match(/\d{3,4}\s*년/g) || []).length;
   const items = [
     ["❓ '왜·어떻게' 같은 깊이 있는 질문을 했어요", deepQ >= 2 ? 2 : deepQ, 2, "'왜 그런 선택을 했나요?', '어떻게 ~했나요?'처럼 깊이 있는 질문을 해 보세요."],

@@ -79,6 +79,8 @@
 <main class="wrap" id="app"></main>
 
 <script src="scenarios.js"></script>
+<script src="../top10.js"></script>
+<script>SCENARIOS.forEach(s => s.keywords = withTop10(s.id, s.keywords));</script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
 const app = document.getElementById("app");
@@ -278,8 +280,8 @@ const REAL = ["실제","당시","사실","결국","역사적"];
 function count(text, words){ return words.reduce((n,w)=>n+(text.split(w).length-1),0); }
 function grade(o){
   const all = [myReason, o.a1, o.a2, o.a3].join(" ");
-  const flat = all.replace(/\s/g,"");
-  const kwHit = cur.keywords.filter(k => flat.includes(k.replace(/\s/g,"")));
+  const flat = kwNorm(all);
+  const kwHit = cur.keywords.filter(k => flat.includes(kwNorm(k)));
   const years = (all.match(/\d{3,4}\s*년/g) || []).length;
   const items = [
     ["💭 선택한 이유를 구체적으로 썼어요", myReason.length >= 25 ? 2 : myReason.length >= 10 ? 1 : 0, 2, "이유를 '왜냐하면 ~ 때문이다'처럼 더 자세히 써 보세요."],
