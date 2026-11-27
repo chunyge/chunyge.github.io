@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>역사 돋보기 · 춘쌤의 한국사</title>
+<style>
+  :root{--ink:#2b2b3a;--paper:#fff8ef;--line:#f1dfc4;--c:#e65100}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:var(--ink);background:var(--paper)}
+  header{background:linear-gradient(135deg,#bf360c,#ef6c00);color:#fff;text-align:center;padding:46px 16px 22px;position:relative}
+  header small{letter-spacing:.12em;opacity:.85;font-weight:700}
+  header h1{margin:4px 0 6px;font-size:clamp(1.7rem,6vw,2.4rem)}
+  header p{margin:0;opacity:.92}
+  .back{position:absolute;left:12px;top:12px;background:rgba(255,255,255,.2);color:#fff;border-radius:20px;padding:6px 12px;text-decoration:none;font-weight:800;font-size:.85rem}
+  .wrap{max-width:760px;margin:0 auto;padding:18px 14px 50px}
+  .panel{background:#fff;border:3px solid var(--c);border-radius:20px;padding:18px;margin:12px 0}
+  .step{display:flex;gap:6px;justify-content:center;margin:4px 0 0}
+  .step i{width:34px;height:6px;border-radius:4px;background:#ffe0c2}.step i.on{background:var(--c)}
+  label{display:block;font-weight:800;margin:16px 0 6px;font-size:1.02rem}
+  label small{font-weight:600;color:#888}
+  .qn{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:var(--c);color:#fff;font-size:.9rem;margin-right:6px}
+  .help{font-size:.86rem;color:#7a6a5a;margin:0 0 6px}
+  textarea,input,select{width:100%;font-family:inherit;font-size:1rem;border:2px solid var(--line);border-radius:12px;padding:10px;background:#fff;resize:vertical}
+  textarea:focus,input:focus,select:focus{outline:none;border-color:var(--c)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .btn{font-family:inherit;font-weight:800;cursor:pointer;border:0;border-radius:12px;padding:12px 16px;font-size:1rem;color:#fff;background:var(--c)}
+  .btn.ghost{background:#fff;color:var(--c);border:2px solid var(--c)}
+  .kw{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+  .kw span{border-radius:20px;padding:4px 10px;font-size:.82rem;font-weight:700;background:#eee;color:#888}
+  .kw span.hit{background:#ffe082;color:#5d4300}
+  .look{text-align:center;font-size:3rem;margin:4px 0}
+  .tip{background:#fff3e0;border-radius:12px;padding:10px 12px;font-size:.9rem;line-height:1.55}
+  #card{background:#fff;border:4px solid var(--c);border-radius:20px;padding:20px;max-width:640px;margin:12px auto 0}
+  #card .head{font-size:.8rem;font-weight:900;letter-spacing:.15em;color:#999}
+  #card h3{margin:4px 0;font-size:1.45rem;line-height:1.35}
+  #card .meta{color:#777;font-size:.85rem;margin-bottom:10px}
+  #card dt{font-weight:900;margin-top:10px;color:var(--c)}
+  #card dd{margin:2px 0 0;line-height:1.6;white-space:pre-wrap}
+  .note{font-size:.85rem;color:#888;text-align:center;margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+  <a class="back" href="../">← 자료실</a>
+  <small>VTS · 그림으로 생각 열기</small>
+  <h1>🔍 역사 돋보기</h1>
+  <p>선생님이 보여 주는 그림을 자세히 보고, 내 눈으로 역사를 읽어요.</p>
+</header>
+<main class="wrap" id="app"></main>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+const app = document.getElementById("app");
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem("vts:"+k) || "null"); } catch { return null; } },
+  set(k,v){ try { localStorage.setItem("vts:"+k, JSON.stringify(v)); } catch {} }
+};
+function toast(msg){
+  const d = document.createElement("div");
+  d.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2b2b3a;color:#fff;padding:12px 18px;border-radius:12px;font-weight:700;z-index:9;max-width:90%;text-align:center";
+  d.textContent = msg; document.body.appendChild(d); setTimeout(()=>d.remove(), 2800);
+}
+
+/* 학습지 목차 그대로 */
+const LECTURES = [
+  "한국사 1 · Intro. 역사에서 나만의 ( ) 발견하기","한국사 1 · 1강. 선사시대 ~ 삼국시대","한국사 1 · 2강. 남북국 시대(통일신라/발해)","한국사 1 · 3강. 고려의 건국과 발전",
+  "한국사 1 · 4강. 고려 전기의 대외관계와 지배층 변화 1","한국사 1 · 5강. 고려 후기의 대외관계와 지배층 변화 2","한국사 1 · 6강. 조선 전기(건국과 발전 ~ 붕당의 형성)",
+  "한국사 1 · 7강. 조선 후기(양난과 정치 변화)","한국사 1 · 8강. 흥선대원군의 집권","한국사 1 · 9강. 강화도 조약 ~ 갑신정변","한국사 1 · 10강. 동학농민운동 ~ 갑오개혁",
+  "한국사 1 · 11강. 독립협회와 대한제국","한국사 1 · 12강. 일본의 대한제국 강제 병합","한국사 1 · 13강. 일본에 저항하다!","한국사 1 · 14강. 주제탐구(문화와 사상, 사회와 경제)",
+  "한국사 2 · 1강. 일본의 식민지 지배 정책과 수탈","한국사 2 · 2강. 독립운동사 1 (국외 · 1910년대 ~ 3·1 운동)","한국사 2 · 3강. 독립운동사 2 (대한민국 임시정부의 역사)",
+  "한국사 2 · 4강. 독립운동사 3 (무장투쟁 · 의열투쟁)","한국사 2 · 5강. 독립운동사 4 (국내의 독립운동들)","한국사 2 · 6강. 광복을 위한 노력",
+  "한국사 2 · 7강. 해방 ~ 한국전쟁","한국사 2 · 8강. 독재와 민주화 운동","한국사 2 · 9강. 민주주의 발전과 통일을 위한 노력"
+];
+const QS = [
+  { k:"q1", t:"무슨 일이 일어나고 있나요?", help:"그림 속 사람, 장소, 행동을 보이는 대로 자세히 써요. (누가, 어디서, 무엇을)", ph:"예: 많은 사람들이 거리에 모여 손을 높이 들고 무언가를 외치고 있다." },
+  { k:"q2", t:"무엇을 보고 그렇게 생각했나요?", help:"그림 속 '증거'를 짚어요. 옷차림, 표정, 물건, 글자, 배경 등", ph:"예: 사람들이 태극기를 들고 있고 입을 크게 벌리고 있어서, 만세를 부르고 있다고 생각했다." },
+  { k:"q3", t:"제목을 붙여 본다면?", help:"그림을 한마디로 보여 주는 제목을 짓고, 그렇게 지은 이유도 써요.", ph:"" }
+];
+let S = null; // 현재 활동
+
+/* ① 시작 */
+function home(){
+  window.scrollTo(0,0); const last = store.get("last") || {};
+  app.innerHTML = `
+    <div class="panel">
+      <div class="look">🖼️🔍</div>
+      <p style="text-align:center;margin:0 0 6px;font-weight:800">선생님이 보여 주는 그림을 30초 동안 조용히 살펴보세요.</p>
+      <p style="text-align:center;margin:0;color:#7a6a5a;font-size:.92rem">정답을 맞히는 활동이 아니에요. 보이는 것과 근거가 중요해요!</p>
+      <label>📚 오늘 배우는 강좌</label>
+      <select id="lec">${LECTURES.map(l => `<option ${l===last.lec?"selected":""}>${esc(l)}</option>`).join("")}</select>
+      <label>🖼️ 그림 이름 <small>(선생님이 알려 준 번호나 제목, 몰라도 괜찮아요)</small></label>
+      <input id="pic" maxlength="40" placeholder="예: 그림 1, 3·1 운동 사진" value="">
+      <label>🙋 학번·이름 <small>(또는 모둠)</small></label>
+      <input id="name" maxlength="30" placeholder="예: 20301 홍길동" value="${esc(store.get("name")||"")}">
+      <div class="row"><button class="btn" onclick="start()">돋보기 시작 🔍</button></div>
+    </div>`;
+}
+function start(){
+  const lec = document.getElementById("lec").value, pic = document.getElementById("pic").value.trim(), name = document.getElementById("name").value.trim();
+  if (!name) { toast("학번·이름을 써 주세요!"); return; }
+  store.set("name", name); store.set("last", { lec });
+  S = { lec, pic, name, id: (lec + "|" + pic) };
+  Object.assign(S, store.get("ans:" + S.id) || {});
+  look();
+}
+
+/* ② VTS 질문 3개 */
+function look(){
+  window.scrollTo(0,0);
+  app.innerHTML = `
+    <div class="step"><i class="on"></i><i></i><i></i></div>
+    <div class="panel">
+      <div class="tip">📚 ${esc(S.lec)}${S.pic ? ` · 🖼️ ${esc(S.pic)}` : ""}<br>그림을 다시 보면서, 내 눈으로 본 것을 써요. <b>AI나 검색 없이</b> 써 보세요!</div>
+      ${QS.map((q,i) => `
+        <label><span class="qn">${i+1}</span>${esc(q.t)}</label>
+        <p class="help">${esc(q.help)}</p>
+        ${q.k === "q3"
+          ? `<input id="q3" maxlength="40" placeholder="제목 — 예: '거리로 나온 함성'" value="${esc(S.q3||"")}">
+             <textarea id="q3why" rows="2" style="margin-top:6px" placeholder="이 제목을 붙인 이유는? 왜냐하면 …">${esc(S.q3why||"")}</textarea>`
+          : `<textarea id="${q.k}" rows="3" placeholder="${esc(q.ph)}">${esc(S[q.k]||"")}</textarea>`}`).join("")}
+      <div class="row"><button class="btn ghost" onclick="home()">← 처음으로</button><button class="btn" onclick="toExplain()">다음 : 선생님 설명 듣기 →</button></div>
+    </div>`;
+  ["q1","q2","q3","q3why"].forEach(k => document.getElementById(k).addEventListener("input", () => { S[k] = document.getElementById(k).value; store.set("ans:"+S.id, S); }));
+}
+function toExplain(){
+  ["q1","q2","q3","q3why"].forEach(k => S[k] = document.getElementById(k).value.trim());
+  if (S.q1.length < 10 || S.q2.length < 10) { toast("1번과 2번을 한두 문장 이상 써 주세요!"); return; }
+  if (S.q3.length < 2) { toast("그림에 어울리는 제목을 붙여 주세요!"); return; }
+  store.set("ans:"+S.id, S); explain();
+}
+
+/* ③ 선생님 설명 뒤 정리 */
+function explain(){
+  window.scrollTo(0,0);
+  app.innerHTML = `
+    <div class="step"><i class="on"></i><i class="on"></i><i></i></div>
+    <div class="panel">
+      <div class="tip">👩‍🏫 선생님이 그림 속 실제 역사를 설명해 줄 거예요. 잘 듣고 아래를 채워요.</div>
+      <label>📜 실제로는 어떤 장면이었나요? <small>(언제, 누가, 무엇을)</small></label>
+      <textarea id="real" rows="3" placeholder="예: 1919년 3·1 운동 때 …">${esc(S.real||"")}</textarea>
+      <label>🔍 내 관찰과 비교하면? <small>(맞게 본 점 / 다르게 본 점)</small></label>
+      <textarea id="cmp" rows="3" placeholder="내가 본 ○○은 실제로 … 였다. 하지만 …는 다르게 생각했다.">${esc(S.cmp||"")}</textarea>
+      <label>🔑 핵심 키워드 2~5개 <small>(쉼표로 구분, 교과서에서 찾기)</small></label>
+      <input id="kw" placeholder="예: 3·1 운동, 태극기, 만세 시위" value="${esc(S.kw||"")}">
+      <label>🧭 오늘의 나에게 이 그림이 주는 의미는?</label>
+      <textarea id="now" rows="2" placeholder="오늘 우리에게 … ">${esc(S.now||"")}</textarea>
+      <div id="live" style="margin-top:14px"></div>
+      <div class="row"><button class="btn ghost" onclick="look()">← 관찰 고치기</button><button class="btn" onclick="finish()">🏅 등급 받고 카드 만들기 →</button></div>
+    </div>`;
+  ["real","cmp","kw","now"].forEach(k => document.getElementById(k).addEventListener("input", () => { S[k] = document.getElementById(k).value; store.set("ans:"+S.id, S); live(); }));
+  live();
+}
+function live(){ const r = grade(); document.getElementById("live").innerHTML = `<b>지금 등급 미리보기 :</b> ${r.badge} <span style="color:#888">(${r.score}/${r.max}점)</span>`; }
+
+/* ── 등급 : 역사왕 · 역사귀족 · 역사노비 ── */
+const CAUSE = ["왜냐하면","때문","그래서","따라서","므로","니까","보고","보여","보아","보이"];
+const SEE = ["옷","표정","손","얼굴","배경","글자","깃발","태극기","건물","무기","사람들","색","모습","들고","입고","앞","뒤","옆","가운데","멀리"];
+const NOW = ["오늘","지금","현재","우리","요즘","나에게","나도","사회"];
+const count = (t, ws) => ws.reduce((n,w)=>n+(String(t||"").split(w).length-1),0);
+function grade(){
+  const kws = String(S.kw||"").split(/[,，、]/).map(x=>x.trim()).filter(Boolean);
+  const body = [S.q1,S.q2,S.q3why,S.real,S.cmp,S.now].join(" ").replace(/\s/g,"");
+  const kwHit = kws.filter(k => body.includes(k.replace(/\s/g,"")));
+  const items = [
+    ["👀 보이는 것을 자세히 관찰했어요", (S.q1||"").length >= 40 ? 2 : (S.q1||"").length >= 15 ? 1 : 0, 2, "1번에 누가, 어디서, 무엇을 하는지 더 자세히 써 보세요."],
+    ["🔎 그림 속 증거로 근거를 댔어요", ((S.q2||"").length >= 30 && count(S.q2, CAUSE) >= 1 ? 1 : 0) + (count(S.q2, SEE) >= 2 ? 1 : 0), 2, "2번에 '○○을 보고 ~라고 생각했다'처럼 옷, 표정, 물건 같은 증거를 두 가지 이상 짚어 보세요."],
+    ["🏷️ 어울리는 제목과 이유를 붙였어요", ((S.q3||"").length >= 3 ? 1 : 0) + ((S.q3why||"").length >= 15 && count(S.q3why, CAUSE) >= 1 ? 1 : 0), 2, "제목을 붙인 이유를 '왜냐하면 ~'으로 써 보세요."],
+    ["📌 역사적 근거(키워드·연도)를 썼어요", Math.min(2, (kwHit.length >= 3 ? 2 : kwHit.length >= 1 ? 1 : 0) + (/\d{3,4}\s*년/.test(body) ? 1 : 0)), 2, "실제 장면에 키워드와 연도를 넣어 보세요."],
+    ["⚖️ 내 관찰과 실제 역사를 비교했어요", (S.cmp||"").length >= 25 ? 1 : 0, 1, "내가 맞게 본 점과 다르게 본 점을 함께 써 보세요."],
+    ["🧭 오늘의 나와 연결했어요", (S.now||"").length >= 15 && count(S.now, NOW) >= 1 ? 1 : 0, 1, "이 그림이 오늘 우리에게 주는 의미를 써 보세요."]
+  ];
+  const score = items.reduce((n,x)=>n+x[1],0), max = items.reduce((n,x)=>n+x[2],0);
+  const tier = score >= 8 ? 1 : score >= 5 ? 2 : 3;
+  const badge = tier === 1 ? "👑 1등급 · 역사왕" : tier === 2 ? "🎩 2등급 · 역사귀족" : "🧺 3등급 · 역사노비";
+  return { score, max, tier, badge, items, kwHit };
+}
+
+/* ④ 등급 + 카드 */
+function finish(){
+  ["real","cmp","kw","now"].forEach(k => S[k] = document.getElementById(k).value.trim());
+  if ((S.real||"").length < 10) { toast("선생님 설명을 듣고 실제 장면을 한두 문장 써 주세요!"); return; }
+  store.set("ans:"+S.id, S);
+  const r = grade(), tc = ["","#c99700","#7b4fd6","#8d6e63"][r.tier];
+  const tips = r.items.filter(x => x[1] < x[2]).map(x => x[3]);
+  window.scrollTo(0,0);
+  app.innerHTML = `
+    <div class="step"><i class="on"></i><i class="on"></i><i class="on"></i></div>
+    <div class="panel" style="text-align:center;border-color:${tc}">
+      <div style="font-size:3rem">${r.badge.split(" ")[0]}</div>
+      <div style="font-size:1.6rem;font-weight:900;color:${tc}">${r.badge.split(" ").slice(1).join(" ")}</div>
+      <div style="color:#777;margin-top:4px">점수 ${r.score} / ${r.max}점 · 8점 이상 역사왕, 5~7점 역사귀족, 4점 이하 역사노비</div>
+      <div style="text-align:left;margin-top:14px">${r.items.map(x=>`<div style="padding:5px 0;border-bottom:1px dashed #eee">${x[1]>=x[2]?"✅":x[1]>0?"🔸":"⬜"} ${x[0]} <span style="float:right;color:#888">${x[1]}/${x[2]}</span></div>`).join("")}</div>
+      ${tips.length ? `<div style="text-align:left;background:#fff8e1;border-radius:12px;padding:10px 12px;margin-top:12px"><b>⬆️ 등급을 올리려면</b><br>${tips.map(t=>"· "+esc(t)).join("<br>")}</div>` : `<p style="font-weight:800;color:${tc}">완벽해요! 진정한 역사왕 👑</p>`}
+      ${r.tier > 1 ? `<div class="row" style="justify-content:center"><button class="btn ghost" onclick="look()">✏️ 관찰 고치기</button><button class="btn ghost" onclick="explain()">✏️ 정리 고치기</button></div>` : ""}
+    </div>
+    <div id="card">
+      <div class="head">역사 돋보기 · VTS</div>
+      <h3>🏷️ 「${esc(S.q3)}」</h3>
+      <div class="meta">${esc(S.lec)}${S.pic ? " · 🖼️ " + esc(S.pic) : ""} · ${esc(S.name)} · ${new Date().toLocaleDateString("ko-KR")}</div>
+      <div style="display:inline-block;background:${tc};color:#fff;border-radius:20px;padding:4px 12px;font-weight:900">${r.badge} (${r.score}/${r.max})</div>
+      <dl>
+        <dt>① 무슨 일이 일어나고 있나요?</dt><dd>${esc(S.q1)}</dd>
+        <dt>② 무엇을 보고 그렇게 생각했나요?</dt><dd>${esc(S.q2)}</dd>
+        <dt>③ 제목을 붙여 본다면? · 이유</dt><dd>${esc(S.q3why || "—")}</dd>
+        <dt>📜 실제 장면</dt><dd>${esc(S.real)}</dd>
+        ${S.cmp ? `<dt>⚖️ 내 관찰과 비교</dt><dd>${esc(S.cmp)}</dd>` : ""}
+        ${S.now ? `<dt>🧭 오늘의 나에게</dt><dd>${esc(S.now)}</dd>` : ""}
+        <dt>🔑 사용한 키워드</dt><dd>${r.kwHit.length ? r.kwHit.map(esc).join(", ") : "—"}</dd>
+      </dl>
+      <p style="margin:12px 0 0;font-size:.78rem;color:#999">역사는 삶이다! · 춘쌤의 한국사 · 역사 돋보기</p>
+    </div>
+    <div class="row" style="justify-content:center">
+      <button class="btn" onclick="saveImg()">🖼️ 카드 이미지로 저장</button>
+      <button class="btn ghost" onclick="home()">🔍 다른 그림 보기</button>
+    </div>
+    <p class="note">저장한 이미지(또는 화면 캡처)를 패들렛에 올리면 끝! 등급은 관찰의 자세함, 그림 속 증거, 제목과 이유, 실제 역사와의 비교를 보고 자동으로 매겨져요.</p>`;
+}
+function saveImg(){
+  const el = document.getElementById("card");
+  if (!window.html2canvas) { toast("이미지 저장이 안 되면 화면을 캡처해서 올려 주세요."); return; }
+  html2canvas(el, { scale: 2, backgroundColor: "#ffffff" }).then(cv => {
+    const a = document.createElement("a"); a.download = `역사돋보기_${S.q3}.png`; a.href = cv.toDataURL("image/png"); a.click();
+  }).catch(() => toast("이미지 저장이 안 되면 화면을 캡처해서 올려 주세요."));
+}
+home();
+</script>
+</body>
+</html>
