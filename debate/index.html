@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>챗봇과 토론하기 · 춘쌤의 한국사</title>
+<style>
+  :root{--ink:#2b2b3a;--paper:#f3faf8;--line:#d9ece7;--c:#00897b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:var(--ink);background:var(--paper)}
+  header{background:linear-gradient(135deg,#00574f,#00897b);color:#fff;text-align:center;padding:46px 16px 22px;position:relative}
+  header small{letter-spacing:.12em;opacity:.85;font-weight:700}
+  header h1{margin:4px 0 6px;font-size:clamp(1.7rem,6vw,2.4rem)}
+  header p{margin:0;opacity:.9}
+  .back{position:absolute;left:12px;top:12px;background:rgba(255,255,255,.18);color:#fff;border-radius:20px;padding:6px 12px;text-decoration:none;font-weight:800;font-size:.85rem}
+  .wrap{max-width:820px;margin:0 auto;padding:18px 14px 50px}
+  .tabs{display:flex;gap:8px;justify-content:center;margin:18px 0 12px}
+  .tabs button,.btn{font-family:inherit;font-weight:800;cursor:pointer}
+  .tabs button{font-size:1rem;border:3px solid var(--ink);background:#fff;border-radius:30px;padding:9px 18px}
+  .tabs button.on{background:var(--ink);color:#fff}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+  .card{background:#fff;border:3px solid var(--k);border-radius:18px;padding:14px;cursor:pointer;text-align:left;font-family:inherit;color:inherit;transition:transform .15s}
+  .card:hover{transform:translateY(-3px)}
+  .card .em{font-size:1.8rem}
+  .card .no{display:inline-block;background:var(--k);color:#fff;border-radius:8px;padding:2px 8px;font-size:.8rem;font-weight:800;margin-left:6px;vertical-align:middle}
+  .card b{display:block;font-size:1.02rem;margin:6px 0 2px;line-height:1.4}
+  .card span.l{font-size:.85rem;color:#777}
+  .done{float:right;font-size:.78rem;color:#2e7d32;font-weight:800}
+  .panel{background:#fff;border:3px solid var(--c);border-radius:20px;padding:18px;margin:12px 0}
+  .motion{font-size:1.25rem;font-weight:900;line-height:1.45;margin:6px 0 10px}
+  .bg{background:#eef6ff;border-radius:12px;padding:12px;line-height:1.65;font-size:.95rem}
+  .sides{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  .side{border:3px solid var(--line);border-radius:16px;padding:16px;font-size:1.1rem;font-weight:900;background:#fff;cursor:pointer;font-family:inherit}
+  .side.pro{color:#1565c0}.side.con{color:#c62828}
+  .side:hover{border-color:currentColor}
+  /* 대화 */
+  .chat{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+  .msg{max-width:86%;padding:11px 14px;border-radius:16px;line-height:1.6;font-size:.97rem;white-space:pre-wrap}
+  .bot{align-self:flex-start;background:#fff;border:2px solid var(--line);border-top-left-radius:4px}
+  .me{align-self:flex-end;background:var(--c);color:#fff;border-top-right-radius:4px}
+  .who{font-size:.78rem;font-weight:800;opacity:.7;display:block;margin-bottom:2px}
+  .hint{align-self:flex-start;background:#fff8e1;border-radius:12px;padding:8px 12px;font-size:.88rem;max-width:86%}
+  .composer{position:sticky;bottom:0;background:var(--paper);padding:10px 0 4px;margin-top:10px}
+  .composer .lbl{font-weight:800;font-size:.9rem;margin-bottom:4px}
+  textarea,input{width:100%;font-family:inherit;font-size:1rem;border:2px solid var(--line);border-radius:12px;padding:10px;resize:vertical;background:#fff}
+  textarea:focus,input:focus{outline:none;border-color:var(--c)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .btn{border:0;border-radius:12px;padding:12px 16px;font-size:1rem;color:#fff;background:var(--c)}
+  .btn.ghost{background:#fff;color:var(--c);border:2px solid var(--c)}
+  .kw{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+  .kw span{border-radius:20px;padding:4px 10px;font-size:.82rem;font-weight:700;background:#eee;color:#888}
+  .kw span.hit{background:#ffe082;color:#5d4300}
+  label{display:block;font-weight:800;margin:14px 0 4px}
+  .fixed{background:#e8f5f2;border-radius:10px;padding:8px 10px;font-weight:700;font-size:.95rem}
+  .round{display:inline-block;background:var(--c);color:#fff;border-radius:20px;padding:3px 10px;font-size:.8rem;font-weight:800}
+  #card{background:#fff;border:4px solid var(--c);border-radius:20px;padding:20px;max-width:640px;margin:12px auto 0}
+  #card h3{margin:0 0 4px;font-size:1.2rem;line-height:1.4}
+  #card .meta{color:#777;font-size:.85rem;margin-bottom:10px}
+  #card dt{font-weight:900;margin-top:10px;color:var(--c)}
+  #card dd{margin:2px 0 0;line-height:1.6;white-space:pre-wrap}
+  .note{font-size:.85rem;color:#888;text-align:center;margin-top:8px}
+  @media (max-width:560px){.sides{grid-template-columns:1fr}.msg{max-width:94%}}
+</style>
+</head>
+<body>
+<header>
+  <a class="back" href="../">← 자료실</a>
+  <small>QUEST 2 · 챗봇과 함께 역사 속으로</small>
+  <h1>⚖️ 챗봇과 토론하기</h1>
+  <p>토론봇은 늘 <b>반대편</b>에 서요. 근거로 설득해 보세요!</p>
+</header>
+<main class="wrap" id="app"></main>
+
+<script src="topics.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+const app = document.getElementById("app");
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem("debate:"+k) || "null"); } catch { return null; } },
+  set(k,v){ try { localStorage.setItem("debate:"+k, JSON.stringify(v)); } catch {} }
+};
+function toast(msg){
+  const d = document.createElement("div");
+  d.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2b2b3a;color:#fff;padding:12px 18px;border-radius:12px;font-weight:700;z-index:9;max-width:90%;text-align:center";
+  d.textContent = msg; document.body.appendChild(d); setTimeout(()=>d.remove(), 2800);
+}
+
+let book = 1, T = null, side = null, round = 0, log = [], said = [];
+const sideName = s => s === "pro" ? "찬성" : "반대";
+const other = s => s === "pro" ? "con" : "pro";
+
+/* ── 말투 분석 (등급과 토론봇 반응에 같이 써요) ── */
+const CAUSE = ["왜냐하면","때문","그래서","따라서","그러므로","결과","덕분","탓","이유","므로","니까"];
+const COUNTER = ["하지만","그러나","반면","물론","그런데","오히려","한편","인정"];
+const NOW = ["오늘","지금","현재","우리","요즘","나에게","사회"];
+const REAL = ["실제","당시","사실","결국","역사적"];
+const count = (t, ws) => ws.reduce((n,w)=>n+(String(t).split(w).length-1),0);
+const kwIn = t => T.keywords.filter(k => String(t).replace(/\s/g,"").includes(k.replace(/\s/g,"")));
+const hasYear = t => /\d{3,4}\s*년/.test(t);
+
+/* ① 첫 화면 */
+function home(){
+  T = null; window.scrollTo(0,0);
+  const list = TOPICS.filter(t => t.book === book);
+  app.innerHTML = `
+    <div class="panel">
+      <b style="font-size:1.15rem">✍️ 내가 직접 정하는 토론 주제</b>
+      <p style="margin:4px 0 8px;color:#666;font-size:.92rem">찬성과 반대로 나뉠 수 있는 문장으로 써 보세요. 예: 흥선대원군의 경복궁 중건은 필요했다</p>
+      <input id="myMotion" maxlength="80" placeholder="○○○은(는) 옳았다 / 필요했다">
+      <input id="myKw" style="margin-top:8px" placeholder="핵심 키워드 3~5개 (쉼표로 구분) 예: 흥선대원군, 경복궁, 원납전, 당백전">
+      <div class="row"><button class="btn" onclick="startCustom()">이 주제로 토론 시작 →</button></div>
+    </div>
+    <div class="tabs">
+      <button class="${book===1?"on":""}" onclick="book=1;home()">한국사 1</button>
+      <button class="${book===2?"on":""}" onclick="book=2;home()">한국사 2</button>
+    </div>
+    <p style="text-align:center;margin:0 0 14px;color:#666">또는 오늘 배운 강좌의 토론 주제를 골라 보세요.</p>
+    <div class="grid">${list.map(t => `
+      <button class="card" style="--k:${t.c}" onclick="open_('${t.id}')">
+        ${store.get(t.id+":done") ? `<span class="done">✔ ${esc(store.get(t.id+":done"))}</span>` : ""}
+        <span class="em">${t.emoji}</span><span class="no">${t.no}</span>
+        <b>"${esc(t.motion)}"</b><span class="l">${esc(t.lecture)}</span>
+      </button>`).join("")}</div>`;
+}
+
+/* 직접 만든 주제: 토론봇은 '어떤 주제에도 통하는 반박 질문'으로 맞서요 */
+function startCustom(){
+  const m = document.getElementById("myMotion").value.trim();
+  const kw = document.getElementById("myKw").value.split(/[,，、]/).map(x=>x.trim()).filter(Boolean).slice(0,8);
+  if (m.length < 6) { toast("토론 주제를 문장으로 써 주세요! (예: ○○○은 옳았다)"); return; }
+  if (kw.length < 2) { toast("핵심 키워드를 2개 이상 써 주세요!"); return; }
+  T = { id:"custom", custom:true, no:"내 주제", lecture:"직접 정한 토론 주제", emoji:"✍️", c:"#00897b", motion:m, keywords:kw,
+        background:"직접 정한 주제예요. 토론을 시작하기 전에 교과서나 학습지에서 관련 사실(언제, 누가, 무엇을)을 먼저 찾아 두세요.",
+        pro:["그 선택 덕분에 당시 사람들이 얻은 이익은 분명히 있었어. 그 시대의 상황에서는 다른 길이 더 위험했을 수도 있잖아?",
+             "결과만 보고 판단하면 안 돼. 그때 그 사람들이 알 수 있었던 정보로는 최선의 선택이었을 수도 있어."],
+        con:["그 선택 때문에 피해를 본 사람은 없었을까? 누가 이익을 보고 누가 손해를 봤는지 따져 봐야 해.",
+             "그 시대에도 다른 길을 주장한 사람들이 있었어. 그쪽 길이 더 나았을 가능성은 없을까?"] };
+  open_("custom");
+}
+
+/* ② 주제와 입장 고르기 */
+function open_(id){
+  if (id !== "custom") T = TOPICS.find(t => t.id === id);
+  side = null; round = 0; log = []; said = [];
+  document.documentElement.style.setProperty("--c", T.c); window.scrollTo(0,0);
+  app.innerHTML = `
+    <div class="panel">
+      <span class="round">${esc(T.no)} · ${esc(T.lecture)}</span>
+      <div class="motion">⚖️ "${esc(T.motion)}"</div>
+      <div class="bg">📜 <b>배경</b> ${esc(T.background)}</div>
+      <p style="margin:14px 0 0;font-weight:800">나는 이 주장에…</p>
+      <div class="sides">
+        <button class="side pro" onclick="pickSide('pro')">👍 찬성해요</button>
+        <button class="side con" onclick="pickSide('con')">👎 반대해요</button>
+      </div>
+      <p style="margin:10px 0 0;color:#666;font-size:.88rem">토론봇은 내가 고른 입장의 반대편에 서서 3라운드 동안 반박해요.</p>
+      <div class="row"><button class="btn ghost" onclick="home()">← 처음으로</button></div>
+    </div>`;
+}
+function pickSide(s){
+  side = s; round = 1;
+  log = [{ who:"bot", text:`좋아, 너는 ${sideName(s)}, 나는 ${sideName(other(s))} 쪽이야. 🔥\n주제는 "${T.motion}"!\n\n1라운드 — 네 주장과 그 근거를 말해 줘. 역사적 사실(사건, 인물, 연도)을 근거로 들면 더 설득력 있어.` }];
+  chat();
+}
+
+/* ③ 3라운드 대화 */
+const ROUNDS = {
+  1:{ lbl:"1라운드 · 내 주장과 근거", ph:"나는 ~라고 생각해. 왜냐하면 ~ 때문이야. 예를 들어 ~" },
+  2:{ lbl:"2라운드 · 토론봇의 반박에 다시 반박하기", ph:"네 말도 일리가 있지만, ~ 그래서 ~" },
+  3:{ lbl:"3라운드 · 최종 발언 (현재와 연결하기)", ph:"정리하면 ~. 이 토론은 오늘 우리에게 ~을 알려 줘." }
+};
+function chat(){
+  const kwTip = T.keywords.map(k=>`<span class="${said.some(t=>kwIn(t).includes(k))?"hit":""}">${esc(k)}</span>`).join("");
+  app.innerHTML = `
+    <div class="panel">
+      <span class="round">⚖️ "${esc(T.motion)}"</span>
+      <div style="margin:6px 0 0;font-size:.9rem;color:#666">나: <b>${sideName(side)}</b> · 토론봇: <b>${sideName(other(side))}</b></div>
+      <div class="chat" id="chat">${log.map(m => m.who === "bot"
+        ? `<div class="msg bot"><span class="who">🤖 토론봇</span>${esc(m.text)}</div>`
+        : m.who === "hint" ? `<div class="hint">💡 ${esc(m.text)}</div>`
+        : `<div class="msg me"><span class="who">🙋 나</span>${esc(m.text)}</div>`).join("")}</div>
+      ${round <= 3 ? `
+      <div class="composer">
+        <div class="lbl">${ROUNDS[round].lbl}</div>
+        <textarea id="say" rows="3" placeholder="${esc(ROUNDS[round].ph)}"></textarea>
+        <div class="kw">${kwTip}</div>
+        <div class="row"><button class="btn" onclick="send()">보내기 ➤</button><button class="btn ghost" onclick="open_('${T.id}')">처음부터</button></div>
+      </div>` : `
+      <div class="row"><button class="btn" onclick="sheet()">✏️ 학습지 Quest 2 정리하기 →</button></div>`}
+    </div>`;
+  const c = document.getElementById("chat"); c.lastElementChild && c.lastElementChild.scrollIntoView({block:"end"});
+}
+function send(){
+  const t = document.getElementById("say").value.trim();
+  if (t.length < 15) { toast("한두 문장 이상으로 생각을 써 주세요!"); return; }
+  log.push({ who:"me", text:t }); said.push(t);
+  const opp = T[other(side)];
+  // 학생 글에 맞춘 짧은 코칭
+  const tips = [];
+  if (count(t, CAUSE) === 0) tips.push("'왜냐하면 ~ 때문에'로 이유를 이어 주면 더 설득력 있어요.");
+  if (kwIn(t).length === 0 && !hasYear(t)) tips.push("키워드나 연도 같은 역사적 근거를 하나 넣어 보세요.");
+  if (round === 1) {
+    log.push({ who:"bot", text:`${kwIn(t).length ? `'${kwIn(t)[0]}'을(를) 근거로 들었구나. 좋아!` : "네 생각은 잘 들었어."} 하지만 ${sideName(other(side))} 쪽에서는 이렇게 말할 거야.\n\n👉 ${opp[0]}\n\n2라운드 — 이 반박에 어떻게 답할래?` });
+  } else if (round === 2) {
+    const ack = count(t, COUNTER) ? "상대 의견을 인정하면서 반박했네. 토론 고수 느낌인데? 😎" : "흠, 그래도 아직 설득되지 않았어.";
+    log.push({ who:"bot", text:`${ack} 그럼 이건 어때?\n\n👉 ${opp[1]}\n\n3라운드 — 마지막 발언이야. 네 입장을 정리하고, 이 토론이 오늘 우리에게 주는 의미까지 말해 줘.` });
+  } else {
+    const mine = T[side];
+    log.push({ who:"bot", text:`멋진 토론이었어! 👏 정리해 볼게.\n\n👍 찬성 쪽: ${T.pro[0]}\n👎 반대 쪽: ${T.con[0]}\n\n역사에는 정답이 하나만 있는 게 아니야. 중요한 건 근거를 들어 생각하고, 다른 입장도 이해하는 거지. 이제 학습지에 정리해 보자!` });
+  }
+  if (tips.length && round < 3) log.push({ who:"hint", text:tips.join(" ") });
+  round++; store.set(T.id+":chat", { side, said });
+  chat();
+}
+
+/* ④ 학습지 Quest 2 정리 (대화 내용이 미리 들어가요) */
+const Q = () => ({ q1:`"${T.motion}"에 대한 나의 주장과 근거는?`, q2:"토론봇의 반박에 나는 어떻게 답했나?", q3:"이 토론이 오늘 우리에게 주는 의미는?" });
+const FIELDS = [["name","학번·이름 (또는 모둠)"],["a1","1차 질문 · 답변 정리"],["a2","2차 질문 · 답변 정리"],["a3","3차 질문 · 답변 정리"],["new","활동 소감 · 새롭게 알게 되었거나 흥미로운 내용"],["qa","궁금한 내용 Q&A"]];
+function sheet(){
+  window.scrollTo(0,0); const q = Q();
+  const saved = store.get(T.id+":sheet") || { a1:said[0]||"", a2:said[1]||"", a3:said[2]||"" };
+  if (!saved.name) saved.name = store.get("name") || "";
+  const qOf = k => k==="a1"?"1차 질문 : "+q.q1 : k==="a2"?"2차 질문 : "+q.q2 : k==="a3"?"3차 질문 : "+q.q3 : "";
+  app.innerHTML = `
+    <div class="panel">
+      <b style="font-size:1.15rem">✏️ Quest 2 · 핵심 대화 질문 정리하기</b>
+      <p style="margin:4px 0 0;color:#666;font-size:.9rem">토론에서 한 말이 미리 들어가 있어요. 다듬어서 더 논리적으로 고치면 등급이 올라가요!</p>
+      <div class="fixed" style="margin-top:10px">⚖️ "${esc(T.motion)}" · 나의 입장: ${sideName(side)}</div>
+      ${FIELDS.map(([k,t])=>`<label>${t}</label>${qOf(k)?`<div class="fixed">${esc(qOf(k))}</div>`:""}
+        ${k==="name" ? `<input id="f_${k}" value="${esc(saved[k]||"")}" placeholder="예: 20301 홍길동">`
+                     : `<textarea id="f_${k}" rows="${k==="new"||k==="qa"?2:3}" placeholder="${k==="qa"?"Q. 더 알고 싶은 점  /  A. 찾아본 답":""}">${esc(saved[k]||"")}</textarea>`}`).join("")}
+      <div id="live" style="margin-top:16px"></div>
+      <div class="row"><button class="btn ghost" onclick="chat()">← 대화 보기</button><button class="btn" onclick="finish()">🏅 등급 받고 정리 카드 만들기 →</button></div>
+    </div>`;
+  FIELDS.forEach(([k])=>document.getElementById("f_"+k).addEventListener("input", saveSheet));
+  saveSheet();
+}
+function readSheet(){ const o={}; FIELDS.forEach(([k])=>{ const el=document.getElementById("f_"+k); if(el) o[k]=el.value; }); return o; }
+function saveSheet(){
+  const o = readSheet(); store.set(T.id+":sheet", o); if (o.name) store.set("name", o.name);
+  const r = grade(o); document.getElementById("live").innerHTML = `<b>지금 등급 미리보기 :</b> ${r.badge} <span style="color:#888">(${r.score}/${r.max}점)</span>`;
+}
+
+/* ── 역사논리 등급 (만약에 한국사와 같은 기준) ── */
+function grade(o){
+  const all = [o.a1, o.a2, o.a3].join(" ");
+  const kw = kwIn(all), years = (all.match(/\d{3,4}\s*년/g) || []).length;
+  const items = [
+    ["🎯 주장을 분명히 하고 이유를 들었어요", (o.a1||"").trim().length >= 40 && count(o.a1, CAUSE) >= 1 ? 2 : (o.a1||"").trim().length >= 15 ? 1 : 0, 2, "1차 답변에 '나는 ~라고 생각한다. 왜냐하면 ~'처럼 주장과 이유를 함께 써 보세요."],
+    ["🔗 원인과 결과를 이어서 설명했어요", Math.min(2, Math.floor(count(all, CAUSE) / 2)), 2, "'때문에', '그래서', '그 결과' 같은 말로 원인→결과를 이어 보세요."],
+    ["📌 역사적 근거(키워드·연도·인물)를 썼어요", Math.min(2, (kw.length >= 4 ? 2 : kw.length >= 2 ? 1 : 0) + (years ? 1 : 0)), 2, "키워드나 연도, 인물 이름을 근거로 넣어 보세요."],
+    ["🛡️ 상대의 반박에 직접 답했어요", (o.a2||"").trim().length >= 30 && (count(o.a2, COUNTER) + count(o.a2, REAL)) >= 1 ? 1 : 0, 1, "2차 답변에 '그 말도 일리가 있지만, 실제로는 ~'처럼 반박에 직접 답해 보세요."],
+    ["⚖️ 상대 입장도 인정했어요", count(all, ["물론","인정","일리","~지만","지만"]) >= 1 ? 1 : 0, 1, "'물론 ~라는 점은 인정하지만'처럼 상대 의견도 존중해 보세요."],
+    ["🧭 현재와 연결했어요", (o.a3||"").trim().length >= 20 && count(o.a3, NOW) >= 1 ? 1 : 0, 1, "3차 답변에 오늘 우리 삶과 이어지는 점을 써 보세요."],
+    ["✍️ 1·2·3차 답변을 충실히 채웠어요", ["a1","a2","a3"].every(k => (o[k]||"").trim().length >= 30) ? 1 : 0, 1, "1·2·3차 답변을 각각 두 문장 이상 써 보세요."]
+  ];
+  const score = items.reduce((n,x)=>n+x[1],0), max = items.reduce((n,x)=>n+x[2],0);
+  const tier = score >= 8 ? 1 : score >= 5 ? 2 : 3;
+  const badge = tier === 1 ? "👑 1등급 · 역사논리왕" : tier === 2 ? "🎩 2등급 · 역사논리귀족" : "🧺 3등급 · 역사논리노비";
+  return { score, max, tier, badge, items, kw };
+}
+
+/* ⑤ 등급 + 정리 카드 */
+function finish(){
+  const o = readSheet();
+  if (!["a1","a2","a3"].every(k => (o[k]||"").trim().length >= 5)) { toast("1·2·3차 답변을 조금 더 채워 주세요!"); return; }
+  const r = grade(o); store.set(T.id+":done", r.badge.split(" · ")[1]);
+  const q = Q(); const tc = ["","#c99700","#7b4fd6","#8d6e63"][r.tier];
+  const tips = r.items.filter(x => x[1] < x[2]).map(x => x[3]);
+  window.scrollTo(0,0);
+  app.innerHTML = `
+    <div class="panel" style="text-align:center;border-color:${tc}">
+      <div style="font-size:3rem">${r.badge.split(" ")[0]}</div>
+      <div style="font-size:1.6rem;font-weight:900;color:${tc}">${r.badge.split(" ").slice(1).join(" ")}</div>
+      <div style="color:#777;margin-top:4px">논리 점수 ${r.score} / ${r.max}점 · 8점 이상 왕, 5~7점 귀족, 4점 이하 노비</div>
+      <div style="text-align:left;margin-top:14px">${r.items.map(x=>`<div style="padding:5px 0;border-bottom:1px dashed #eee">${x[1]>=x[2]?"✅":x[1]>0?"🔸":"⬜"} ${x[0]} <span style="float:right;color:#888">${x[1]}/${x[2]}</span></div>`).join("")}</div>
+      ${tips.length ? `<div style="text-align:left;background:#fff8e1;border-radius:12px;padding:10px 12px;margin-top:12px"><b>⬆️ 등급을 올리려면</b><br>${tips.map(t=>"· "+esc(t)).join("<br>")}</div>` : `<p style="font-weight:800;color:${tc}">완벽해요! 진정한 역사논리왕 👑</p>`}
+      ${r.tier > 1 ? `<div class="row" style="justify-content:center"><button class="btn ghost" onclick="sheet()">✏️ 고쳐서 등급 올리기</button></div>` : ""}
+    </div>
+    <div id="card">
+      <h3>⚖️ "${esc(T.motion)}"</h3>
+      <div class="meta">${esc(T.no)} · ${esc(T.lecture)} · ${esc(o.name||"이름 없음")} · 나의 입장: ${sideName(side)} · ${new Date().toLocaleDateString("ko-KR")}</div>
+      <div style="display:inline-block;background:${tc};color:#fff;border-radius:20px;padding:4px 12px;font-weight:900">${r.badge} (${r.score}/${r.max})</div>
+      <dl>
+        <dt>1차 질문 · ${esc(q.q1)}</dt><dd>${esc(o.a1)}</dd>
+        <dt>2차 질문 · ${esc(q.q2)}</dt><dd>${esc(o.a2)}</dd>
+        <dt>3차 질문 · ${esc(q.q3)}</dt><dd>${esc(o.a3)}</dd>
+        ${o.new?`<dt>💡 새롭게 알게 된 점</dt><dd>${esc(o.new)}</dd>`:""}
+        ${o.qa?`<dt>❓ 궁금한 내용 Q&A</dt><dd>${esc(o.qa)}</dd>`:""}
+        <dt>🔑 사용한 키워드</dt><dd>${r.kw.length ? r.kw.map(esc).join(", ") : "—"}</dd>
+      </dl>
+      <p style="margin:12px 0 0;font-size:.78rem;color:#999">역사는 삶이다! · 춘쌤의 한국사 · 챗봇과 토론하기</p>
+    </div>
+    <div class="row" style="justify-content:center">
+      <button class="btn" onclick="saveImg()">🖼️ 카드 이미지로 저장</button>
+      <button class="btn ghost" onclick="home()">🏠 처음으로</button>
+    </div>
+    <p class="note">저장한 이미지(또는 화면 캡처)를 패들렛에 올리면 끝! 등급은 글의 주장·근거·반박·현재 연결을 보고 자동으로 매겨져요.</p>`;
+}
+function saveImg(){
+  const el = document.getElementById("card");
+  if (!window.html2canvas) { toast("이미지 저장이 안 되면 화면을 캡처해서 올려 주세요."); return; }
+  html2canvas(el, { scale: 2, backgroundColor: "#ffffff" }).then(cv => {
+    const a = document.createElement("a"); a.download = `챗봇과토론하기_${T.no}.png`; a.href = cv.toDataURL("image/png"); a.click();
+  }).catch(() => toast("이미지 저장이 안 되면 화면을 캡처해서 올려 주세요."));
+}
+
+const start = location.hash.slice(1);
+if (start && TOPICS.some(t=>t.id===start)) { book = TOPICS.find(t=>t.id===start).book; open_(start); } else home();
+</script>
+</body>
+</html>
