@@ -251,7 +251,7 @@ function sheet(){
     ${steps(4)}
     <div class="panel">
       <b style="font-size:1.15rem">✏️ Quest 2 · 핵심 대화 질문 정리하기</b>
-      <p style="margin:4px 0 0;color:#666;font-size:.9rem">논리적으로 쓸수록 등급이 올라가요. 👑 역사논리왕에 도전!</p>
+      <p style="margin:4px 0 0;color:#666;font-size:.9rem">논리적으로 쓸수록 등급이 올라가요. 👑 역사왕에 도전!</p>
       ${FIELDS.map(([k,t,type,ph])=>`<label>${t}</label>${qOf(k)?`<div class="fixed">${esc(qOf(k))}</div>`:""}
         ${type==="input" ? `<input id="f_${k}" value="${esc(saved[k]||"")}" placeholder="예: 20301 홍길동">`
                          : `<textarea id="f_${k}" rows="${k==="new"||k==="qa"?2:3}" placeholder="${esc(ph)}">${esc(saved[k]||"")}</textarea>`}`).join("")}
@@ -292,7 +292,7 @@ function grade(o){
   ];
   const score = items.reduce((n,x)=>n+x[1],0), max = items.reduce((n,x)=>n+x[2],0);
   const tier = score >= 8 ? 1 : score >= 5 ? 2 : 3;
-  const badge = tier === 1 ? "👑 1등급 · 역사논리왕" : tier === 2 ? "🎩 2등급 · 역사논리귀족" : "🧺 3등급 · 역사논리노비";
+  const badge = tier === 1 ? "👑 1등급 · 역사왕" : tier === 2 ? "🎩 2등급 · 역사귀족" : "🧺 3등급 · 역사노비";
   return { score, max, tier, badge, items, kwHit };
 }
 
@@ -309,9 +309,9 @@ function finish(){
     <div class="panel" style="text-align:center;border-color:${tierColor}">
       <div style="font-size:3rem">${r.badge.split(" ")[0]}</div>
       <div style="font-size:1.6rem;font-weight:900;color:${tierColor}">${r.badge.split(" ").slice(1).join(" ")}</div>
-      <div style="color:#777;margin-top:4px">논리 점수 ${r.score} / ${r.max}점 · 8점 이상 왕, 5~7점 귀족, 4점 이하 노비</div>
+      <div style="color:#777;margin-top:4px">논리 점수 ${r.score} / ${r.max}점 · 8점 이상 역사왕, 5~7점 역사귀족, 4점 이하 역사노비</div>
       <div style="text-align:left;margin-top:14px">${r.items.map(x=>`<div style="padding:5px 0;border-bottom:1px dashed #eee">${x[1]>=x[2]?"✅":x[1]>0?"🔸":"⬜"} ${x[0]} <span style="float:right;color:#888">${x[1]}/${x[2]}</span></div>`).join("")}</div>
-      ${tips.length ? `<div style="text-align:left;background:#fff8e1;border-radius:12px;padding:10px 12px;margin-top:12px"><b>⬆️ 등급을 올리려면</b><br>${tips.map(t=>"· "+esc(t)).join("<br>")}</div>` : `<p style="font-weight:800;color:${tierColor}">완벽해요! 진정한 역사논리왕 👑</p>`}
+      ${tips.length ? `<div style="text-align:left;background:#fff8e1;border-radius:12px;padding:10px 12px;margin-top:12px"><b>⬆️ 등급을 올리려면</b><br>${tips.map(t=>"· "+esc(t)).join("<br>")}</div>` : `<p style="font-weight:800;color:${tierColor}">완벽해요! 진정한 역사왕 👑</p>`}
       ${r.tier > 1 ? `<div class="row" style="justify-content:center"><button class="btn ghost" onclick="sheet()">✏️ 고쳐서 등급 올리기</button></div>` : ""}
     </div>
     <div id="card">

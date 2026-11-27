@@ -86,6 +86,7 @@ function toast(msg){
 }
 
 let book = 1, P = null, log = [], asked = []; // asked: [{q, type, own, a}]
+const IDEA = { who:"어떤 사람이었는지 (어린 시절, 하던 일)", what:"가장 중요하게 한 일과 그 결과", why:"왜 그런 선택을 했는지", hard:"가장 힘들었던 순간이나 아쉬운 점", today:"오늘의 우리에게 하고 싶은 말" };
 const CHIP = { who:"어떤 사람이었나요?", what:"가장 중요하게 한 일은 무엇인가요?", why:"왜 그런 선택을 했나요?", hard:"가장 힘들었던 순간은 언제였나요?", today:"오늘의 우리에게 하고 싶은 말은?" };
 const TYPE_WORDS = {
   why:["왜","이유","까닭","무엇 때문","어째서","목적"],
@@ -117,7 +118,7 @@ function home(){
 function open_(id){
   P = PEOPLE.find(p => p.id === id); log = [{ who:"them", text:P.hello }]; asked = [];
   document.documentElement.style.setProperty("--c", P.c);
-  log.push({ who:"hint", text:"추천 질문을 눌러도 되고, 직접 질문을 써도 돼요. '왜?', '어떻게?'처럼 깊이 있는 질문일수록 좋은 기사가 나와요. 직접 만든 질문은 등급에 더 유리해요!" });
+  log.push({ who:"hint", text:"기자인 내가 직접 질문을 써서 물어봐요. 인물 이름이나 사건(키워드)을 넣어 '왜?', '어떻게?'로 물을수록 좋은 기사가 나와요." });
   talk();
 }
 function talk(){
@@ -134,13 +135,15 @@ function talk(){
       ${n < 3 ? `
       <div class="composer">
         <div class="lbl"><span class="round">${n+1}차 질문</span> 무엇을 물어볼까요? (${n+1}/3)</div>
-        <div class="chips">${chips.map(t => `<button class="chip" onclick="ask(CHIP['${t}'], false)">${esc(CHIP[t])}</button>`).join("")}</div>
-        <textarea id="q" rows="2" placeholder="직접 질문 쓰기 — 예: 왜 그때 ○○○을 했나요?"></textarea>
+        <textarea id="q" rows="2" placeholder="질문을 직접 써 보세요 — 예: 왜 그때 ○○○을 했나요?"></textarea>
+        <details style="margin-top:6px"><summary>💡 무엇을 물어볼지 막막하다면?</summary><p>${chips.map(t => "· " + esc(IDEA[t])).join("<br>")}<br><b>그대로 베끼지 말고, 인물·사건 이름을 넣어 내 질문으로 바꿔 쓰세요!</b></p></details>
         <div class="row"><button class="btn" onclick="ask(document.getElementById('q').value, true)">질문하기 🎤</button><button class="btn ghost" onclick="home()">다른 인물</button></div>
       </div>` : `
       <div class="row"><button class="btn" onclick="sheet()">📰 기사 쓰기 (학습지 Quest 2) →</button></div>`}
     </div>`;
   const ch = document.querySelector(".chat"); ch && ch.lastElementChild && ch.lastElementChild.scrollIntoView({block:"end"});
+  const qi = document.getElementById("q");
+  if (qi) qi.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask(qi.value, true); } });
 }
 function classify(q){
   const used = asked.map(a => a.type); let best = null, bestN = 0;
@@ -156,19 +159,52 @@ function classify(q){
   }
   return best;
 }
+/* 질문에 나온 키워드가 들어 있는 문장을 인물의 이야기에서 찾아 답해요 */
+/* 질문 속 '이름·사건' 낱말 뽑기 (조사·동사 꼴은 빼요) */
+function nounsIn(q){
+  const STOP = ["선생님","무엇","어떻게","어땠","그때","당시","정말","생각","궁금","나라","사람","시대","마음","가장","제일","당신","여기","거기","이것","그것"];
+  return q.replace(/[?!.,~'"]/g," ").split(/\s+/)
+    .map(w => w.replace(/(은|는|이|가|을|를|에서|에게|에|의|도|와|과|으로|로|까지|이란|란|께서|님|이라|라)$/,""))
+    .filter(w => w.length >= 2 && !/[하했었았니요까고서며던게지나다죠네]$/.test(w) && !STOP.some(x => w.includes(x)));
+}
+/* 인물의 이야기에서 그 낱말이 들어 있는 문장을 찾아요 */
+function sentencesAbout(words){
+  if (!words.length) return null;
+  const usedA = asked.map(x => x.a).join(" ");
+  const scored = [];
+  for (const ans of Object.values(P.qa)) {
+    (ans.match(/[^.?!]+[.?!]?/g) || []).map(x => x.trim()).filter(Boolean).forEach(sn => {
+      const n = words.filter(w => sn.includes(w)).length;
+      if (n && !usedA.includes(sn)) scored.push([n, sn]);
+    });
+  }
+  if (!scored.length) return null;
+  scored.sort((x,y) => y[0]-x[0]);
+  const top = scored[0][0];
+  return scored.filter(x => x[0] >= top).slice(0, 3).map(x => x[1]).join(" ");
+}
 function ask(q, own){
   q = String(q || "").trim();
-  if (q.length < 4) { toast("질문을 조금 더 자세히 써 주세요!"); return; }
-  const t = classify(q);
+  if (q.length < 6) { toast("질문을 문장으로 조금 더 자세히 써 주세요!"); return; }
+  if (asked.some(a => a.q === q)) { toast("같은 질문은 이미 했어요. 다른 질문을 해 보세요!"); return; }
   log.push({ who:"me", text:q });
-  if (!t) {
+  const words = nounsIn(q);
+  const t = classify(q);
+  const used = asked.map(a => a.type);
+  let type = null, a = null;
+  // ① 질문 유형(왜·힘든 점 등)의 답에 질문 속 낱말이 들어 있거나 낱말이 없으면 → 그 유형의 답
+  if (t && !used.includes(t) && (!words.length || words.some(w => P.qa[t].includes(w)))) { type = t; a = P.qa[t]; }
+  // ② 아니면 질문 속 이름·사건이 나오는 문장으로 답
+  if (!a) { const about = sentencesAbout(words); if (about) { type = "kw"; a = about; } }
+  // ③ 그래도 없으면 유형 답(이미 했던 유형이면 다시 말해 줌)
+  if (!a && t) { type = t; a = (used.includes(t) ? "앞에서도 말했지만, " : "") + P.qa[t]; }
+  if (!a) {
     log.push({ who:"them", text:"음… 그 질문은 내가 답하기 어렵구려. 내가 살던 시대와 내가 한 일에 대해 물어봐 주시오. 예를 들면 '왜 그런 선택을 했나요?'처럼 말이오." });
     talk(); return;
   }
-  const repeat = asked.some(a => a.type === t);
-  const a = (repeat ? "앞에서도 말했지만, " : "") + P.qa[t];
   log.push({ who:"them", text:a });
-  asked.push({ q, type:t, own, a:P.qa[t] });
+  if (type === "kw" && a.length < 90) log.push({ who:"hint", text:"인물이 짧게 답했어요. 더 자세한 내용(특히 '왜?')은 교과서와 학습지에서 찾아 기사에 보태 보세요!" });
+  asked.push({ q, type, own, a });
   if (asked.length === 3) log.push({ who:"hint", text:"인터뷰 끝! 이제 들은 내용을 '내 말로' 정리해서 기사를 써요. 인물의 말을 그대로 베끼면 등급이 낮아져요." });
   store.set(P.id+":asked", asked);
   talk();
@@ -211,14 +247,14 @@ function grade(o){
   const ans = ["a1","a2","a3"].map(k => (o[k]||"").trim());
   const all = ans.join(" ") + " " + (o.new||"");
   const deepQ = asked.filter(a => DEEP.some(w => a.q.includes(w))).length;
-  const ownQ = asked.filter(a => a.own).length;
+  const specQ = asked.filter(a => P.keywords.some(k => a.q.replace(/\s/g,"").includes(k.replace(/\s/g,"")))).length;
   const rates = ans.map((t,i) => t.length >= 15 ? copyRate(t, asked[i].a) : 1);
   const avgRate = rates.reduce((s,x)=>s+x,0) / 3;
   const kw = P.keywords.filter(k => all.replace(/\s/g,"").includes(k.replace(/\s/g,"")));
   const years = (all.match(/\d{3,4}\s*년/g) || []).length;
   const items = [
     ["❓ '왜·어떻게' 같은 깊이 있는 질문을 했어요", deepQ >= 2 ? 2 : deepQ, 2, "'왜 그런 선택을 했나요?', '어떻게 ~했나요?'처럼 깊이 있는 질문을 해 보세요."],
-    ["✍️ 질문을 직접 만들었어요", ownQ >= 1 ? 1 : 0, 1, "추천 질문만 누르지 말고 내가 궁금한 질문을 직접 써 보세요."],
+    ["🎯 인물·사건 이름을 넣어 구체적으로 물었어요", specQ >= 2 ? 1 : 0, 1, "'서희는 왜 강동 6주를 요구했나요?'처럼 인물이나 사건 이름을 넣어 물어보세요."],
     ["🖊️ 답변을 베끼지 않고 내 말로 정리했어요", ans.every(t => t.length >= 25) ? (avgRate < 0.45 ? 2 : avgRate < 0.65 ? 1 : 0) : 0, 2, "인물의 말을 그대로 옮기지 말고, 핵심만 골라 내 말로 줄여 써 보세요."],
     ["📌 역사적 근거(키워드·연도)를 썼어요", Math.min(2, (kw.length >= 4 ? 2 : kw.length >= 2 ? 1 : 0) + (years ? 1 : 0)), 2, "인물과 관련된 키워드나 연도를 넣어 보세요."],
     ["🔗 이유와 결과를 이어서 설명했어요", count(all, CAUSE) >= 2 ? 1 : 0, 1, "'~때문에', '그래서 ~'로 인물의 선택과 결과를 이어 보세요."],
@@ -246,7 +282,7 @@ function finish(){
       <div style="color:#777;margin-top:4px">점수 ${r.score} / ${r.max}점 · 8점 이상 역사왕, 5~7점 역사귀족, 4점 이하 역사노비</div>
       <div style="text-align:left;margin-top:14px">${r.items.map(x=>`<div style="padding:5px 0;border-bottom:1px dashed #eee">${x[1]>=x[2]?"✅":x[1]>0?"🔸":"⬜"} ${x[0]} <span style="float:right;color:#888">${x[1]}/${x[2]}</span></div>`).join("")}</div>
       ${tips.length ? `<div style="text-align:left;background:#fff8e1;border-radius:12px;padding:10px 12px;margin-top:12px"><b>⬆️ 등급을 올리려면</b><br>${tips.map(t=>"· "+esc(t)).join("<br>")}</div>` : `<p style="font-weight:800;color:${tc}">완벽해요! 진정한 역사왕 👑</p>`}
-      ${r.tier > 1 ? `<div class="row" style="justify-content:center"><button class="btn ghost" onclick="sheet()">✏️ 고쳐서 등급 올리기</button>${asked.some(a=>a.own)?"":`<button class="btn ghost" onclick="open_('${P.id}')">🎤 직접 질문으로 다시 인터뷰</button>`}</div>` : ""}
+      ${r.tier > 1 ? `<div class="row" style="justify-content:center"><button class="btn ghost" onclick="sheet()">✏️ 고쳐서 등급 올리기</button><button class="btn ghost" onclick="open_('${P.id}')">🎤 다시 인터뷰하기</button></div>` : ""}
     </div>
     <div id="card">
       <div style="font-size:.8rem;font-weight:900;letter-spacing:.15em;color:#999">역사 신문 · 특별 인터뷰</div>
