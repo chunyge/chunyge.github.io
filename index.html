@@ -60,11 +60,6 @@
   .lesson .t q{display:block;font-size:.88rem;color:var(--c);font-weight:700;margin-top:2px}
   .btn{display:inline-block;border:2px solid var(--c,var(--accent));color:var(--c,var(--accent));background:#fff;border-radius:20px;padding:5px 12px;font-weight:800;font-size:.85rem;white-space:nowrap}
   .btn:hover{background:var(--c,var(--accent));color:#fff}
-  .games{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-top:22px}
-  .game{--c:#7b4fd6;background:#f4efff;border-radius:16px;padding:14px;border:3px solid #7b4fd6}
-  .game h4{margin:0 0 4px;font-size:1.05rem}
-  .game p{margin:0 0 10px;font-size:.88rem;line-height:1.45}
-  .quiz{--c:#1368ce;background:#eaf3ff;border-color:#1368ce}
   /* 활동 정리 */
   .act{margin-top:28px;background:#fff;border:4px solid #1e88a8;border-radius:20px;padding:18px}
   .act h2{margin:0 0 4px;font-size:1.35rem}
@@ -123,7 +118,6 @@
       <div class="tip"><b>🔁 수업 후</b>문제 만들고 셀프 피드백. 시험 기간 복습용으로도 OK</div>
     </div>
     <div class="track" id="track1"></div>
-    <div class="games" id="games1"></div>
   </section>
 
   <section class="panel" id="p2">
@@ -133,7 +127,6 @@
       <div class="tip"><b>🤖 수업 후</b>AI튜터·챗봇 인터뷰, 셀프 체크로 스스로 정리</div>
     </div>
     <div class="track" id="track2"></div>
-    <div class="games" id="games2"></div>
   </section>
 
   <section class="act" id="activity">
@@ -271,15 +264,6 @@ const BOOK2 = [
     "드디어 우리가 사는 오늘에 도착했어. 민주주의와 평화 통일, 우리 시대의 과제는 무엇일까?")
 ];
 
-const GAMES1 = [
-  { h:"⚔️ 1학기 테마 게임 · 천하를 통일하라!", p:"고구려·백제·신라·고려·조선 중 우리 모둠 나라를 골라 미션을 해결하고 땅을 차지해요. 공격권·방어권·점령권을 모아 보세요!", f:"files/h1-guide.pdf", b:"규칙 보기" },
-  { h:"🎮 실시간 한국사 퀴즈", p:"선생님 화면의 PIN을 입력하고 폰으로 참여! 빨리 맞힐수록 점수가 높아요.", f:"https://chunyge.github.io/chunstory-quiz/play.html", b:"퀴즈 입장", quiz:true }
-];
-const GAMES2 = [
-  { h:"🎯 WANTED · 친일파 인물 리스트", p:"수업 미션으로 모은 코인으로 반민족 친일파를 찾아내요. 모둠이 한 줄을 완성하면 한국사 볼!", f:"files/h2-wanted.pdf", b:"리스트 보기" },
-  { h:"🎮 실시간 한국사 퀴즈", p:"선생님 화면의 PIN을 입력하고 폰으로 참여! 빨리 맞힐수록 점수가 높아요.", f:"https://chunyge.github.io/chunstory-quiz/play.html", b:"퀴즈 입장", quiz:true }
-];
-
 /* ── 화면 그리기 ── */
 function station(s, i, openFirst){
   const e = ERAS[s.era];
@@ -302,15 +286,8 @@ function station(s, i, openFirst){
       </div>
     </div>`;
 }
-function games(list){
-  return list.map(g => `
-    <div class="game${g.quiz ? " quiz" : ""}"><h4>${g.h}</h4><p>${g.p}</p>
-      <a class="btn" href="${g.f}" target="_blank" rel="noopener">${g.b}</a></div>`).join("");
-}
 document.getElementById("track1").innerHTML = BOOK1.map((s,i)=>station(s,i,true)).join("");
 document.getElementById("track2").innerHTML = BOOK2.map((s,i)=>station(s,i,true)).join("");
-document.getElementById("games1").innerHTML = games(GAMES1);
-document.getElementById("games2").innerHTML = games(GAMES2);
 
 /* 위쪽 캐릭터 줄과 마을: 누르면 그 시대로 이동 */
 const CREW = { p1:["l1","l2","l3","l4","l5","l6","l7","l8","l9","l10","l11","l12","l13","l14"],
