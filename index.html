@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>춘쌤의 한국사 자료실 · 역사 시간여행 마을</title>
+<style>
+  :root{
+    --ink:#2b2b3a; --paper:#fffaf0; --line:#f0e3c8; --accent:#e85d3f; --sky1:#8fd3ff; --sky2:#d9f1ff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:var(--ink);background:var(--paper);}
+  a{color:inherit;text-decoration:none}
+  /* ── 하늘과 마을 ── */
+  .hero{position:relative;background:linear-gradient(var(--sky1),var(--sky2));padding:34px 16px 0;text-align:center;overflow:hidden}
+  .sun{position:absolute;top:18px;right:70px;width:46px;height:46px;border-radius:50%;background:#ffc93c;box-shadow:0 0 0 8px rgba(255,201,60,.3)}
+  .cloud{position:absolute;background:#fff;border-radius:30px;height:18px;opacity:.9}
+  .cloud::before{content:"";position:absolute;width:24px;height:24px;border-radius:50%;background:#fff;top:-11px;left:10px}
+  .qr-btn{position:absolute;top:16px;right:14px;background:#fff;border:2px solid var(--accent);color:var(--accent);font-weight:800;border-radius:12px;padding:6px 12px;cursor:pointer;font-size:.9rem}
+  .title{display:inline-block;background:#fff;border:5px solid var(--accent);border-radius:18px;padding:12px 26px;box-shadow:0 6px 0 rgba(0,0,0,.12)}
+  .title small{display:block;font-size:.85rem;color:#888;font-weight:700;letter-spacing:.1em}
+  .title h1{margin:2px 0 0;font-size:clamp(1.5rem,5vw,2.3rem)}
+  .motto{margin:14px 0 8px;font-weight:800}
+  .crew{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;margin:6px 0 14px}
+  .crew span{font-size:1.9rem;background:rgba(255,255,255,.6);border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s}
+  .crew span:hover{transform:translateY(-4px)}
+  .village{display:flex;justify-content:center;align-items:flex-end;gap:6px;height:120px;margin-top:6px}
+  .house{position:relative;width:min(13vw,96px);border-radius:4px 4px 0 0}
+  .house::before{content:"";position:absolute;left:-10%;right:-10%;top:-22px;height:24px;background:#3b3b4f;clip-path:polygon(0 100%,8% 30%,50% 0,92% 30%,100% 100%,85% 75%,15% 75%)}
+  .house::after{content:"";position:absolute;left:30%;right:30%;bottom:0;height:40%;background:rgba(0,0,0,.18);border-radius:3px 3px 0 0}
+  .ground{height:14px;background:#5bb35b}
+  /* ── 본문 ── */
+  .wrap{max-width:900px;margin:0 auto;padding:18px 14px 40px}
+  .tabs{display:flex;gap:8px;justify-content:center;margin:6px 0 18px}
+  .tabs button{font-family:inherit;font-size:1.05rem;font-weight:800;border:3px solid var(--ink);background:#fff;border-radius:30px;padding:10px 20px;cursor:pointer}
+  .tabs button.on{background:var(--ink);color:#fff}
+  .panel{display:none}.panel.on{display:block}
+  .info{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:18px}
+  .tip{background:#fff;border:2px dashed var(--line);border-radius:14px;padding:12px 14px;font-size:.92rem;line-height:1.5}
+  .tip b{display:block;font-size:1rem;margin-bottom:4px}
+  .track{position:relative;padding-left:22px}
+  .track::before{content:"";position:absolute;left:8px;top:0;bottom:0;border-left:4px dotted #e0c9a0}
+  .station{position:relative;background:#fff;border:3px solid var(--c);border-radius:18px;margin:14px 0;overflow:hidden}
+  .station::before{content:"";position:absolute;left:-23px;top:26px;width:14px;height:14px;border-radius:50%;background:var(--c);border:3px solid var(--paper)}
+  .st-head{display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;background:var(--bg)}
+  .avatar{flex:none;width:56px;height:56px;border-radius:50%;background:#fff;border:3px solid var(--c);display:flex;align-items:center;justify-content:center;font-size:1.9rem}
+  .st-head h3{margin:0;font-size:1.15rem}
+  .st-head p{margin:2px 0 0;font-size:.85rem;color:#666}
+  .arrow{margin-left:auto;color:var(--c);font-size:1.2rem;transition:transform .2s}
+  .station.open .arrow{transform:rotate(90deg)}
+  .st-body{display:none;padding:4px 14px 14px}
+  .station.open .st-body{display:block}
+  .bubble{position:relative;background:var(--bg);border-radius:14px;padding:10px 14px;margin:8px 0 12px 64px;font-size:.93rem;line-height:1.5}
+  .bubble::before{content:"";position:absolute;left:-10px;top:14px;border:8px solid transparent;border-right-color:var(--bg);border-left:0}
+  .lesson{display:flex;align-items:center;gap:10px;border:2px dashed var(--line);border-radius:12px;padding:10px 12px;margin:8px 0;flex-wrap:wrap}
+  .no{flex:none;background:var(--c);color:#fff;font-weight:800;border-radius:8px;padding:3px 8px;font-size:.85rem}
+  .lesson .t{flex:1;min-width:180px}
+  .lesson .t b{display:block}
+  .lesson .t i{font-style:normal;font-size:.85rem;color:#777}
+  .lesson .t q{display:block;font-size:.88rem;color:var(--c);font-weight:700;margin-top:2px}
+  .btn{display:inline-block;border:2px solid var(--c,var(--accent));color:var(--c,var(--accent));background:#fff;border-radius:20px;padding:5px 12px;font-weight:800;font-size:.85rem;white-space:nowrap}
+  .btn:hover{background:var(--c,var(--accent));color:#fff}
+  .games{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-top:22px}
+  .game{--c:#7b4fd6;background:#f4efff;border-radius:16px;padding:14px;border:3px solid #7b4fd6}
+  .game h4{margin:0 0 4px;font-size:1.05rem}
+  .game p{margin:0 0 10px;font-size:.88rem;line-height:1.45}
+  .quiz{--c:#1368ce;background:#eaf3ff;border-color:#1368ce}
+  footer{text-align:center;font-size:.85rem;color:#888;padding:10px 0 30px}
+  /* QR */
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:9}
+  .modal.on{display:flex}
+  .modal .box{background:#fff;border-radius:18px;padding:22px;text-align:center;max-width:320px}
+  .modal button{margin-top:10px;font-family:inherit;font-weight:800;border:0;background:var(--ink);color:#fff;border-radius:10px;padding:8px 18px;cursor:pointer}
+  #qr img,#qr svg{width:220px;height:220px}
+  @media (max-width:600px){
+    .sun{right:auto;left:14px;top:14px;width:34px;height:34px}
+    .title{margin-top:26px}
+    .tabs button{font-size:.88rem;padding:9px 12px}
+    .bubble{margin-left:0}.bubble::before{display:none}
+    .info{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="sun"></div>
+  <div class="cloud" style="top:30px;left:8%;width:60px"></div>
+  <div class="cloud" style="top:56px;left:22%;width:44px"></div>
+  <div class="cloud" style="top:40px;right:22%;width:52px"></div>
+  <button class="qr-btn" onclick="openQR()">QR</button>
+  <div class="title"><small>역사는 삶이다!</small><h1>춘쌤의 한국사 자료실</h1></div>
+  <p class="motto">시대별 친구들과 떠나는 역사 시간여행 · 내 삶의 주인공은 나!</p>
+  <div class="crew" id="crew"></div>
+  <div class="village" id="village"></div>
+  <div class="ground"></div>
+</header>
+
+<main class="wrap">
+  <div class="tabs">
+    <button class="on" data-p="p1">한국사 1 · 고대~근대</button>
+    <button data-p="p2">한국사 2 · 일제강점기~현대</button>
+  </div>
+
+  <section class="panel on" id="p1">
+    <div class="info">
+      <div class="tip"><b>🎬 수업 전</b>교과서 해설 영상 10분 보고 오기. 밑줄·키워드 10개를 챙기면 코인!</div>
+      <div class="tip"><b>✏️ 수업 중</b>키워드 10개로 학습지 빈칸 채우고, 빙고 → 패들렛 업로드</div>
+      <div class="tip"><b>🔁 수업 후</b>문제 만들고 셀프 피드백. 시험 기간 복습용으로도 OK</div>
+    </div>
+    <div class="track" id="track1"></div>
+    <div class="games" id="games1"></div>
+  </section>
+
+  <section class="panel" id="p2">
+    <div class="info">
+      <div class="tip"><b>🎬 수업 전</b>수업 영상과 <u>디딤 질문</u>으로 생각 열기</div>
+      <div class="tip"><b>✏️ 수업 중</b>키워드 10개 → 학습지 → 빙고, 더 깊게 들어가기를 패들렛에</div>
+      <div class="tip"><b>🤖 수업 후</b>AI튜터·챗봇 인터뷰, 셀프 체크로 스스로 정리</div>
+    </div>
+    <div class="track" id="track2"></div>
+    <div class="games" id="games2"></div>
+  </section>
+</main>
+
+<footer>자료는 수업에 맞춰 업데이트돼요 · 문의는 춘쌤에게 · 평택마이스터고등학교</footer>
+
+<div class="modal" id="qrModal" onclick="if(event.target===this)closeQR()">
+  <div class="box">
+    <h3 style="margin:0 0 8px">📱 QR로 입장하세요</h3>
+    <div id="qr"></div>
+    <p id="qrUrl" style="font-size:.85rem;color:#666;word-break:break-all"></p>
+    <button onclick="closeQR()">닫기</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script>
+/* ── 시대별 안내 캐릭터 ── */
+const ERAS = {
+  guide:   { emoji:"🧑‍🏫", name:"춘쌤",   role:"시간여행 안내자",        c:"#e85d3f", bg:"#fff1ec", house:"#ffb199" },
+  ancient: { emoji:"🪨",  name:"뗀돌이", role:"선사·삼국 · 구석기 소년",  c:"#a0703c", bg:"#f8eee2", house:"#e3b98a" },
+  nambuk:  { emoji:"🌊",  name:"해동이", role:"남북국 · 발해 소녀",       c:"#1e88a8", bg:"#e5f5fa", house:"#8fd0e3" },
+  goryeo:  { emoji:"🏺",  name:"청자",   role:"고려 · 벽란도 도공",       c:"#3b9a8a", bg:"#e4f5f1", house:"#9fdccd" },
+  joseon:  { emoji:"📜",  name:"훈민이", role:"조선 · 집현전 선비",       c:"#7b5cc4", bg:"#efeafb", house:"#c3b2ee" },
+  modern:  { emoji:"📰",  name:"개화",   role:"개항기 · 신문 기자",       c:"#c2185b", bg:"#fce8f0", house:"#f3a1c0" },
+  heritage:{ emoji:"🏛️", name:"유산이", role:"주제탐구 · 문화유산 탐험가", c:"#c78b00", bg:"#fff5d9", house:"#ffd772" },
+  indep:   { emoji:"✊",  name:"만세",   role:"일제강점기 · 독립운동 학생", c:"#d64933", bg:"#fdebe7", house:"#f4a291" },
+  today:   { emoji:"🕊️", name:"평화",   role:"현대 · 민주시민",          c:"#2e7d32", bg:"#e8f5e9", house:"#9ed6a0" }
+};
+
+/* ── 강좌 데이터 (학습지 목차 기준) ── */
+const BOOK1 = [
+  { era:"guide", title:"출발역 · 오리엔테이션", sub:"생각노트 사용법 · 나만의 ( ) 발견하기",
+    say:"안녕! 나는 춘쌤이야. 역사는 외우는 게 아니라 <b>삶</b>이야. 나와 닮은 역사 인물부터 찾아볼까?",
+    lessons:[
+      { no:"가이드", t:"생각노트 활용 가이드 · 테마 게임 규칙", f:"h1-guide.pdf" },
+      { no:"Intro", t:"역사에서 나만의 (    ) 발견하기", q:"나와 닮은 역사 인물은 누구일까?", f:"h1-00-intro.pdf" },
+      { no:"전체", t:"2026 한국사 1 학습지 전체", f:"h1-all.pdf" }
+    ]},
+  { era:"ancient", title:"돌도끼 마을", sub:"선사시대 ~ 삼국시대",
+    say:"우가! 나는 뗀돌이. 돌을 깨뜨려 도구를 만들던 시절부터 삼국이 경쟁하던 시대까지 안내할게!",
+    lessons:[{ no:"1강", t:"선사시대 ~ 삼국시대", p:"8~17", q:"왜 고조선을 배워야 할까?", f:"h1-01.pdf" }]},
+  { era:"nambuk", title:"해동성국 항구", sub:"남북국 시대(통일신라·발해)",
+    say:"바다 동쪽의 번성한 나라, 해동성국! 남쪽엔 신라, 북쪽엔 발해가 있었다는 걸 기억해 줘.",
+    lessons:[{ no:"2강", t:"남북국 시대(통일신라/발해)", p:"18~21", q:"왜 남북국 시대를 기억해야 할까?", f:"h1-02.pdf" }]},
+  { era:"goryeo", title:"벽란도 무역항", sub:"고려의 건국 ~ 대외관계와 지배층 변화",
+    say:"어서 와, 벽란도야! 외국 상인들이 '코리아'를 알게 된 곳이지. 거란·여진·몽골과 맞선 고려 이야기를 들려줄게.",
+    lessons:[
+      { no:"3강", t:"고려의 건국과 발전", p:"22~25", q:"왜 고려를 배워야 할까?", f:"h1-03.pdf" },
+      { no:"4강", t:"고려 전기의 대외관계와 지배층 변화 1", p:"26~28", q:"왜 고려의 외교정책을 배워야 할까?", f:"h1-04.pdf" },
+      { no:"5강", t:"고려 후기의 대외관계와 지배층 변화 2", p:"28~33", q:"무신정권과 몽골의 침입, 고려를 지킨 사람은 누구였을까?", f:"h1-05.pdf" }
+    ]},
+  { era:"joseon", title:"집현전 서당", sub:"조선 전기 ~ 조선 후기",
+    say:"에헴, 훈민이라 하오. 나라의 틀을 세운 조선 전기부터 양난 이후의 변화까지 함께 공부해 봅시다.",
+    lessons:[
+      { no:"6강", t:"조선 전기(건국과 발전 ~ 붕당의 형성)", p:"34~37", q:"왜 조선을 배워야 할까?", f:"h1-06.pdf" },
+      { no:"7강", t:"조선 후기(양난과 정치 변화)", p:"38~49", q:"왜 조선의 변화 과정에 주목해야 할까?", f:"h1-07.pdf" }
+    ]},
+  { era:"modern", title:"개항장 신문사", sub:"흥선대원군 ~ 국권 침탈과 저항",
+    say:"특종이요! 문이 열리고 세상이 뒤바뀌던 시대야. 기자의 눈으로 사건 현장을 취재해 보자!",
+    lessons:[
+      { no:"8강", t:"흥선대원군의 집권", p:"50~53 / 109", q:"흥선대원군을 배워야 하는 이유는?", f:"h1-08.pdf" },
+      { no:"미션", t:"2부 테마 게임 · 한국 근대사 인물 리스트", f:"h1-game2.pdf" },
+      { no:"9강", t:"강화도 조약 ~ 갑신정변", p:"110~120", q:"김옥균, 그는 왜 갑신정변을 일으켜야 했을까?", f:"h1-09.pdf" },
+      { no:"10강", t:"동학농민운동 ~ 갑오개혁", p:"122~131", q:"전봉준, 그는 왜 봉기를 일으켜야 했을까?", f:"h1-10.pdf" },
+      { no:"11강", t:"독립협회와 대한제국", p:"132~135", q:"서재필과 고종, 무엇이 조선을 위한 길이었을까?", f:"h1-11.pdf" },
+      { no:"12강", t:"일본의 대한제국 강제 병합", p:"136~139", q:"을사5적과 헤이그 특사는 어떻게 기억되고 있을까?", f:"h1-12.pdf" },
+      { no:"13강", t:"일본에 저항하다!", p:"140~147", q:"무엇이 그들을 의병으로 만든 것일까?", f:"h1-13.pdf" }
+    ]},
+  { era:"heritage", title:"문화유산 박물관", sub:"주제탐구 · 문화와 사상, 사회와 경제",
+    say:"시대를 가로질러 보물찾기! 문화유산과 경제·신분 제도의 변화를 주제별로 탐구해 보자.",
+    lessons:[{ no:"14강", t:"주제탐구(문화와 사상, 사회와 경제)", p:"60~105", q:"K-문화유산, 오늘 우리는 어떻게 재해석할까?", f:"h1-14.pdf" }]}
+];
+
+const BOOK2 = [
+  { era:"guide", title:"출발역 · 오리엔테이션", sub:"생각노트 사용법 · 내가 독립운동가라면?",
+    say:"2권에 온 걸 환영해! 이번엔 우리가 <b>독립운동가</b>가 되어 시대를 건너 볼 거야.",
+    lessons:[
+      { no:"가이드", t:"생각노트 활용 가이드", f:"h2-guide.pdf" },
+      { no:"Start", t:"1부 Start · 내가 독립운동가라면?", q:"일제 강점기, 나는 어떤 독립운동가처럼 살았을까?", f:"h2-00-start.pdf" },
+      { no:"전체", t:"2026 춘샘의 한국사 2 학습지 전체", f:"h2-all.pdf" }
+    ]},
+  { era:"indep", title:"독립의 길", sub:"1부 · 일제 강점기와 독립운동",
+    say:"대한 독립 만세! 나는 만세야. 빼앗긴 나라를 되찾으려 한 사람들의 발자취를 따라가 보자.",
+    lessons:[
+      { no:"1강", t:"일본의 식민지 지배 정책과 수탈", p:"8~9, 20~23, 44~49", q:"왜 일본은 식민 지배 정책을 계속 바꿨을까?", f:"h2-01.pdf" },
+      { no:"2강", t:"독립운동사 1 (국외 · 1910년대 ~ 3·1 운동)", p:"10~15", q:"왜 독립운동가들은 저항했을까?", f:"h2-02.pdf" },
+      { no:"3강", t:"독립운동사 2 (대한민국 임시정부의 역사)", p:"16~19", q:"왜 대한민국 임시정부를 배워야 할까?", f:"h2-03.pdf" },
+      { no:"4강", t:"독립운동사 3 (1920~30년대 무장투쟁·의열투쟁)", p:"24~27, 52~55", q:"왜 이렇게 많은 사람들이 독립운동에 참여했을까?", f:"h2-04.pdf" },
+      { no:"5강", t:"독립운동사 4 (국내의 독립운동들)", p:"28~43", q:"왜 신간회를 배워야 할까?", f:"h2-05.pdf" },
+      { no:"6강", t:"광복을 위한 노력 (1930~40년대 독립운동 통합)", p:"50~59", q:"왜 독립운동가들은 포기하지 않았을까?", f:"h2-06.pdf" }
+    ]},
+  { era:"today", title:"민주 광장", sub:"2부 · 해방 이후 대한민국",
+    say:"해방부터 오늘까지! 분단과 전쟁, 민주화를 지나 우리가 사는 지금에 도착할 거야.",
+    lessons:[
+      { no:"2부", t:"반별 대항전 · 최빈국에서 선진국으로 레벨업! / WHY 현대사?", f:"h2-part2.pdf" },
+      { no:"7강", t:"해방 ~ 한국전쟁", p:"62~83", q:"왜 분단을 막지 못했을까?", f:"h2-07.pdf" },
+      { no:"8강", t:"독재와 민주화 운동", p:"84~117", q:"왜 우리나라 헌법은 계속 바뀌었을까?", f:"h2-08.pdf" },
+      { no:"9강", t:"민주주의 발전과 통일을 위한 노력", p:"120~149", q:"우리 시대의 과제는 무엇일까?", f:"h2-09.pdf" }
+    ]}
+];
+
+const GAMES1 = [
+  { h:"⚔️ 1학기 테마 게임 · 천하를 통일하라!", p:"고구려·백제·신라·고려·조선 중 우리 모둠 나라를 골라 미션을 해결하고 땅을 차지해요. 공격권·방어권·점령권을 모아 보세요!", f:"files/h1-guide.pdf", b:"규칙 보기" },
+  { h:"🎮 실시간 한국사 퀴즈", p:"선생님 화면의 PIN을 입력하고 폰으로 참여! 빨리 맞힐수록 점수가 높아요.", f:"https://chunyge.github.io/chunstory-quiz/play.html", b:"퀴즈 입장", quiz:true }
+];
+const GAMES2 = [
+  { h:"🎯 WANTED · 친일파 인물 리스트", p:"수업 미션으로 모은 코인으로 반민족 친일파를 찾아내요. 모둠이 한 줄을 완성하면 한국사 볼!", f:"files/h2-wanted.pdf", b:"리스트 보기" },
+  { h:"🎮 실시간 한국사 퀴즈", p:"선생님 화면의 PIN을 입력하고 폰으로 참여! 빨리 맞힐수록 점수가 높아요.", f:"https://chunyge.github.io/chunstory-quiz/play.html", b:"퀴즈 입장", quiz:true }
+];
+
+/* ── 화면 그리기 ── */
+function station(s, i, openFirst){
+  const e = ERAS[s.era];
+  const ls = s.lessons.map(l => `
+    <div class="lesson">
+      <span class="no">${l.no}</span>
+      <div class="t"><b>${l.t}</b>${l.p ? `<i>교과서 ${l.p}쪽</i>` : ""}${l.q ? `<q>${l.q}</q>` : ""}</div>
+      <a class="btn" href="files/${l.f}" target="_blank" rel="noopener">학습지 PDF</a>
+    </div>`).join("");
+  return `
+    <div class="station${openFirst && i === 0 ? " open" : ""}" style="--c:${e.c};--bg:${e.bg}" id="st-${s.era}-${i}">
+      <div class="st-head" onclick="this.parentNode.classList.toggle('open')">
+        <div class="avatar">${e.emoji}</div>
+        <div><h3>${s.title}</h3><p>${e.name} · ${e.role} | ${s.sub}</p></div>
+        <span class="arrow">▶</span>
+      </div>
+      <div class="st-body">
+        <div class="bubble"><b>${e.name}</b> : ${s.say}</div>
+        ${ls}
+      </div>
+    </div>`;
+}
+function games(list){
+  return list.map(g => `
+    <div class="game${g.quiz ? " quiz" : ""}"><h4>${g.h}</h4><p>${g.p}</p>
+      <a class="btn" href="${g.f}" target="_blank" rel="noopener">${g.b}</a></div>`).join("");
+}
+document.getElementById("track1").innerHTML = BOOK1.map((s,i)=>station(s,i,true)).join("");
+document.getElementById("track2").innerHTML = BOOK2.map((s,i)=>station(s,i,true)).join("");
+document.getElementById("games1").innerHTML = games(GAMES1);
+document.getElementById("games2").innerHTML = games(GAMES2);
+
+/* 위쪽 캐릭터 줄과 마을: 누르면 그 시대로 이동 */
+const order = ["ancient","nambuk","goryeo","joseon","modern","heritage","indep","today"];
+document.getElementById("crew").innerHTML = order.map(k => `<span title="${ERAS[k].name} · ${ERAS[k].role}" onclick="goEra('${k}')">${ERAS[k].emoji}</span>`).join("");
+const heights = [58, 76, 66, 92, 70, 84, 62, 80];
+document.getElementById("village").innerHTML = order.map((k,i) => `<div class="house" style="height:${heights[i]}px;background:${ERAS[k].house}" title="${ERAS[k].name}"></div>`).join("");
+
+function showPanel(id){
+  document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.p === id));
+  document.querySelectorAll(".panel").forEach(p => p.classList.toggle("on", p.id === id));
+}
+document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => showPanel(b.dataset.p));
+function goEra(k){
+  const el = document.querySelector(`[id^="st-${k}-"]`);
+  if(!el) return;
+  showPanel(el.closest(".panel").id);
+  el.classList.add("open");
+  el.scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+/* QR */
+function openQR(){
+  const url = location.href.split("#")[0];
+  document.getElementById("qrUrl").textContent = url;
+  const box = document.getElementById("qr");
+  if (window.qrcode) { const q = qrcode(0, "M"); q.addData(url); q.make(); box.innerHTML = q.createSvgTag({ cellSize: 6, margin: 2 }); }
+  else box.textContent = "QR을 불러오지 못했어요. 주소를 알려 주세요.";
+  document.getElementById("qrModal").classList.add("on");
+}
+function closeQR(){ document.getElementById("qrModal").classList.remove("on"); }
+</script>
+</body>
+</html>
