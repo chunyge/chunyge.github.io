@@ -101,17 +101,79 @@ function home(){
   P = null; document.documentElement.style.setProperty("--c","#1565c0"); window.scrollTo(0,0);
   const list = PEOPLE.filter(p => p.book === book);
   app.innerHTML = `
-    <div class="tabs">
+    <div class="panel">
+      <b style="font-size:1.15rem">✍️ 인터뷰할 인물 직접 정하기</b>
+      <p style="margin:4px 0 8px;color:#666;font-size:.92rem">궁금한 역사 인물의 이름을 써 보세요. 위키백과 자료에서 찾아 대답해요.</p>
+      <input id="myName" maxlength="30" placeholder="인물 이름 (예: 정약용, 장영실, 신사임당)">
+      <input id="myKw" style="margin-top:8px" maxlength="80" placeholder="핵심 키워드 2~5개 (쉼표로 구분) 예: 정약용, 실학, 거중기, 목민심서">
+      <div class="row"><button class="btn" id="goCustom" onclick="startCustom()">이 인물 인터뷰하기 🎤</button></div>
+    </div>
+    <div class="tabs" style="margin-top:18px">
       <button class="${book===1?"on":""}" onclick="book=1;home()">한국사 1</button>
       <button class="${book===2?"on":""}" onclick="book=2;home()">한국사 2</button>
     </div>
-    <p style="text-align:center;margin:0 0 14px;color:#666">오늘 배운 강좌의 인물을 골라 인터뷰를 시작하세요.</p>
+    <p style="text-align:center;margin:0 0 14px;color:#666">또는 오늘 배운 강좌의 인물을 골라 보세요.</p>
     <div class="grid">${list.map(p => `
       <button class="card" style="--k:${p.c}" onclick="open_('${p.id}')">
         ${store.get(p.id+":done") ? `<span class="done">✔ ${esc(store.get(p.id+":done"))}</span>` : ""}
         <span class="em">${p.emoji}</span><span class="no">${p.no}</span>
         <b>${esc(p.name)}</b><span class="l">${esc(p.years)} · ${esc(p.lecture)}</span>
       </button>`).join("")}</div>`;
+}
+
+/* ✍️ 직접 정한 인물 : 위키백과 자료로 답하고, 자료가 없으면 '셀프 인터뷰'로 */
+const WIKI = "https://ko.wikipedia.org/w/api.php?format=json&origin=*&";
+async function startCustom(){
+  const name = document.getElementById("myName").value.trim();
+  const kw = document.getElementById("myKw").value.split(/[,，、]/).map(x=>x.trim()).filter(Boolean).slice(0,8);
+  if (name.length < 2) { toast("인물 이름을 써 주세요!"); return; }
+  if (kw.length < 2) { toast("핵심 키워드를 2개 이상 써 주세요! (교과서에서 찾아보세요)"); return; }
+  // 이미 준비된 인물이면 그 인물로
+  const ready = PEOPLE.find(p => p.name.replace(/\s/g,"").includes(name.replace(/\s/g,"")) || name.replace(/\s/g,"").includes(p.name.replace(/\s/g,"")));
+  if (ready) { open_(ready.id); return; }
+  const btn = document.getElementById("goCustom"); btn.disabled = true; btn.textContent = "자료 찾는 중…";
+  let found = null;
+  try {
+    const sr = await (await fetch(WIKI + "action=query&list=search&srlimit=1&srsearch=" + encodeURIComponent(name))).json();
+    const title = sr?.query?.search?.[0]?.title;
+    if (title) {
+      const ex = await (await fetch(WIKI + "action=query&prop=extracts&explaintext=1&redirects=1&titles=" + encodeURIComponent(title))).json();
+      const page = Object.values(ex?.query?.pages || {})[0];
+      const text = String(page?.extract || "").replace(/==+[^=]+==+/g, " ").replace(/\s+/g, " ").slice(0, 12000);
+      const sents = (text.match(/[^.?!]+[.?!]/g) || []).map(x => x.trim()).filter(x => x.length >= 12 && x.length <= 220);
+      if (sents.length >= 3) found = { title: page.title || title, sents };
+    }
+  } catch (e) { found = null; }
+  btn.disabled = false; btn.textContent = "이 인물 인터뷰하기 🎤";
+  const base = { id:"custom-" + name, custom:true, no:"내 인물", lecture:"직접 정한 인물", emoji:"🧑‍🎤", c:"#1565c0", years:"", keywords:[name, ...kw], qa:{} };
+  if (found) {
+    window.scrollTo(0,0);
+    app.innerHTML = `
+      <div class="panel">
+        <b style="font-size:1.1rem">📚 이 인물이 맞나요?</b>
+        <div class="fixed" style="margin-top:8px">${esc(found.title)}</div>
+        <p style="line-height:1.65">${esc(found.sents.slice(0,2).join(" "))}</p>
+        <div class="row"><button class="btn" id="okWiki">맞아요, 인터뷰 시작 →</button><button class="btn ghost" onclick="selfMode()">아니에요 (셀프 인터뷰로)</button><button class="btn ghost" onclick="home()">다시 입력</button></div>
+      </div>`;
+    document.getElementById("okWiki").onclick = () => {
+      P = Object.assign(base, { name: found.title, src: found.sents, url: "https://ko.wikipedia.org/wiki/" + encodeURIComponent(found.title),
+        hello: `안녕하세요, ${found.title}에 대해 무엇이든 물어보세요. 위키백과 자료에서 찾아 대답할게요.` });
+      begin();
+    };
+    window.__base = base;
+  } else { window.__base = base; selfMode(); }
+}
+function selfMode(){
+  const base = window.__base;
+  P = Object.assign(base, { name: base.keywords[0], self: true,
+    hello: `자료를 자동으로 찾지 못해서 '셀프 인터뷰'로 진행해요. 질문을 쓰고, 교과서나 학습지에서 찾은 답을 ${base.keywords[0]}의 말투로 직접 써 보세요.` });
+  begin();
+}
+function begin(){
+  log = [{ who:"them", text:P.hello }]; asked = [];
+  document.documentElement.style.setProperty("--c", P.c);
+  log.push({ who:"hint", text:"기자인 내가 직접 질문을 써서 물어봐요. 인물 이름이나 사건(키워드)을 넣어 '왜?', '어떻게?'로 물을수록 좋은 기사가 나와요." });
+  talk();
 }
 
 /* ② 인터뷰 (질문 3번) */
@@ -127,15 +189,16 @@ function talk(){
   const chips = Object.keys(CHIP).filter(t => !used.includes(t));
   app.innerHTML = `
     <div class="panel">
-      <div class="head"><div class="ava">${P.emoji}</div><div><b>${esc(P.name)}</b><span>${esc(P.years)} · ${esc(P.no)} ${esc(P.lecture)}</span></div></div>
+      <div class="head"><div class="ava">${P.emoji}</div><div><b>${esc(P.name)}</b><span>${P.custom ? (P.src ? `📚 위키백과 자료로 답해요 · <a href="${P.url}" target="_blank" rel="noopener">원문 보기</a>` : "✍️ 셀프 인터뷰 (답도 내가 찾아 써요)") : esc(P.years) + " · " + esc(P.no) + " " + esc(P.lecture)}</span></div></div>
       <div class="chat">${log.map(m => m.who === "them"
-        ? `<div class="msg them"><span class="who">${P.emoji} ${esc(P.name)}</span>${esc(m.text)}</div>`
+        ? `<div class="msg them"><span class="who">${P.src ? "📚 자료 속 " : P.self ? "✍️ 내가 찾은 " : P.emoji + " "}${esc(P.name)}</span>${esc(m.text)}</div>`
         : m.who === "hint" ? `<div class="hint">💡 ${esc(m.text)}</div>`
         : `<div class="msg me"><span class="who">🎤 기자(나)</span>${esc(m.text)}</div>`).join("")}</div>
       ${n < 3 ? `
       <div class="composer">
         <div class="lbl"><span class="round">${n+1}차 질문</span> 무엇을 물어볼까요? (${n+1}/3)</div>
         <textarea id="q" rows="2" placeholder="질문을 직접 써 보세요 — 예: 왜 그때 ○○○을 했나요?"></textarea>
+        ${P.self ? `<textarea id="selfA" rows="3" style="margin-top:6px" placeholder="교과서·학습지에서 찾은 답을 인물의 말투로 써 보세요."></textarea>` : ""}
         <details style="margin-top:6px"><summary>💡 무엇을 물어볼지 막막하다면?</summary><p>${chips.map(t => "· " + esc(IDEA[t])).join("<br>")}<br><b>그대로 베끼지 말고, 인물·사건 이름을 넣어 내 질문으로 바꿔 쓰세요!</b></p></details>
         <div class="row"><button class="btn" onclick="ask(document.getElementById('q').value, true)">질문하기 🎤</button><button class="btn ghost" onclick="home()">다른 인물</button></div>
       </div>` : `
@@ -143,7 +206,7 @@ function talk(){
     </div>`;
   const ch = document.querySelector(".chat"); ch && ch.lastElementChild && ch.lastElementChild.scrollIntoView({block:"end"});
   const qi = document.getElementById("q");
-  if (qi) qi.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask(qi.value, true); } });
+  if (qi && !P.self) qi.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask(qi.value, true); } });
 }
 function classify(q){
   const used = asked.map(a => a.type); let best = null, bestN = 0;
@@ -164,8 +227,8 @@ function classify(q){
 function nounsIn(q){
   const STOP = ["선생님","무엇","어떻게","어땠","그때","당시","정말","생각","궁금","나라","사람","시대","마음","가장","제일","당신","여기","거기","이것","그것"];
   return q.replace(/[?!.,~'"]/g," ").split(/\s+/)
-    .map(w => w.replace(/(은|는|이|가|을|를|에서|에게|에|의|도|와|과|으로|로|까지|이란|란|께서|님|이라|라)$/,""))
-    .filter(w => w.length >= 2 && !/[하했었았니요까고서며던게지나다죠네]$/.test(w) && !STOP.some(x => w.includes(x)));
+    .map(w => { let x = w, prev; do { prev = x; x = x.replace(/(에서는|에서도|에게는|으로는|으로|에서|에게|께서|이란|이라|까지|부터|은|는|이|가|을|를|에|의|도|와|과|로|란|님|라)$/,""); } while (x !== prev && x.length > 2); return x; })
+    .filter(w => w.length >= 2 && !/(하|했|었|았|니|요|까|죠|네|다|해서|어서|아서|하고|하게|하지|했던|하던)$/.test(w) && !STOP.some(x => w.includes(x)));
 }
 /* 인물의 이야기에서 그 낱말이 들어 있는 문장을 찾아요 */
 function sentencesAbout(words){
@@ -187,8 +250,29 @@ function ask(q, own){
   q = String(q || "").trim();
   if (q.length < 6) { toast("질문을 문장으로 조금 더 자세히 써 주세요!"); return; }
   if (asked.some(a => a.q === q)) { toast("같은 질문은 이미 했어요. 다른 질문을 해 보세요!"); return; }
-  log.push({ who:"me", text:q });
   const words = nounsIn(q);
+  if (P.self) {
+    const sa = (document.getElementById("selfA")?.value || "").trim();
+    if (sa.length < 15) { toast("교과서에서 찾은 답을 한두 문장 이상 써 주세요!"); return; }
+    log.push({ who:"me", text:q }); log.push({ who:"them", text:sa });
+    asked.push({ q, type:"self", own:true, a:sa }); return afterAsk();
+  }
+  if (P.src) {
+    const nameParts = P.name.replace(/\(.*?\)/g,"").split(/\s+/);
+    const ws = words.filter(w => !nameParts.some(n => n && w.includes(n)));
+    const usedA = asked.map(x => x.a).join(" ");
+    const scored = P.src.map((sn, i) => [ws.filter(w => sn.includes(w)).length, i, sn]).filter(x => x[0] && !usedA.includes(x[2])).sort((a,b) => b[0]-a[0] || a[1]-b[1]);
+    if (!scored.length) {
+      log.push({ who:"me", text:q });
+      log.push({ who:"them", text:"자료에서 그 내용을 찾지 못했어요. 인물이 한 일이나 사건 이름을 넣어 다시 물어봐 주세요." });
+      return talk();
+    }
+    const top = scored[0][0];
+    const pick = scored.filter(x => x[0] >= top).slice(0, 2).sort((a,b) => a[1]-b[1]).map(x => x[2]).join(" ");
+    log.push({ who:"me", text:q }); log.push({ who:"them", text:pick });
+    asked.push({ q, type:"wiki", own:true, a:pick }); return afterAsk();
+  }
+  log.push({ who:"me", text:q });
   const t = classify(q);
   const used = asked.map(a => a.type);
   let type = null, a = null;
@@ -205,8 +289,11 @@ function ask(q, own){
   log.push({ who:"them", text:a });
   if (type === "kw" && a.length < 90) log.push({ who:"hint", text:"인물이 짧게 답했어요. 더 자세한 내용(특히 '왜?')은 교과서와 학습지에서 찾아 기사에 보태 보세요!" });
   asked.push({ q, type, own, a });
-  if (asked.length === 3) log.push({ who:"hint", text:"인터뷰 끝! 이제 들은 내용을 '내 말로' 정리해서 기사를 써요. 인물의 말을 그대로 베끼면 등급이 낮아져요." });
-  store.set(P.id+":asked", asked);
+  afterAsk();
+}
+function afterAsk(){
+  if (asked.length === 3) log.push({ who:"hint", text: P.self ? "인터뷰 끝! 이제 기사를 써요." : "인터뷰 끝! 이제 들은 내용을 '내 말로' 정리해서 기사를 써요. 자료를 그대로 베끼면 등급이 낮아져요." });
+  if (!P.custom) store.set(P.id+":asked", asked);
   talk();
 }
 
@@ -255,7 +342,7 @@ function grade(o){
   const items = [
     ["❓ '왜·어떻게' 같은 깊이 있는 질문을 했어요", deepQ >= 2 ? 2 : deepQ, 2, "'왜 그런 선택을 했나요?', '어떻게 ~했나요?'처럼 깊이 있는 질문을 해 보세요."],
     ["🎯 인물·사건 이름을 넣어 구체적으로 물었어요", specQ >= 2 ? 1 : 0, 1, "'서희는 왜 강동 6주를 요구했나요?'처럼 인물이나 사건 이름을 넣어 물어보세요."],
-    ["🖊️ 답변을 베끼지 않고 내 말로 정리했어요", ans.every(t => t.length >= 25) ? (avgRate < 0.45 ? 2 : avgRate < 0.65 ? 1 : 0) : 0, 2, "인물의 말을 그대로 옮기지 말고, 핵심만 골라 내 말로 줄여 써 보세요."],
+    ["🖊️ 답변을 베끼지 않고 내 말로 정리했어요", ans.every(t => t.length >= 25) ? (P.self ? 2 : avgRate < 0.45 ? 2 : avgRate < 0.65 ? 1 : 0) : 0, 2, "인물의 말을 그대로 옮기지 말고, 핵심만 골라 내 말로 줄여 써 보세요."],
     ["📌 역사적 근거(키워드·연도)를 썼어요", Math.min(2, (kw.length >= 4 ? 2 : kw.length >= 2 ? 1 : 0) + (years ? 1 : 0)), 2, "인물과 관련된 키워드나 연도를 넣어 보세요."],
     ["🔗 이유와 결과를 이어서 설명했어요", count(all, CAUSE) >= 2 ? 1 : 0, 1, "'~때문에', '그래서 ~'로 인물의 선택과 결과를 이어 보세요."],
     ["🧭 오늘의 우리와 연결했어요", count(ans[2] + " " + (o.new||""), NOW) >= 1 && ans[2].length >= 20 ? 1 : 0, 1, "3차 답변이나 소감에 오늘 우리에게 주는 의미를 써 보세요."],
@@ -282,12 +369,12 @@ function finish(){
       <div style="color:#777;margin-top:4px">점수 ${r.score} / ${r.max}점 · 8점 이상 역사왕, 5~7점 역사귀족, 4점 이하 역사노비</div>
       <div style="text-align:left;margin-top:14px">${r.items.map(x=>`<div style="padding:5px 0;border-bottom:1px dashed #eee">${x[1]>=x[2]?"✅":x[1]>0?"🔸":"⬜"} ${x[0]} <span style="float:right;color:#888">${x[1]}/${x[2]}</span></div>`).join("")}</div>
       ${tips.length ? `<div style="text-align:left;background:#fff8e1;border-radius:12px;padding:10px 12px;margin-top:12px"><b>⬆️ 등급을 올리려면</b><br>${tips.map(t=>"· "+esc(t)).join("<br>")}</div>` : `<p style="font-weight:800;color:${tc}">완벽해요! 진정한 역사왕 👑</p>`}
-      ${r.tier > 1 ? `<div class="row" style="justify-content:center"><button class="btn ghost" onclick="sheet()">✏️ 고쳐서 등급 올리기</button><button class="btn ghost" onclick="open_('${P.id}')">🎤 다시 인터뷰하기</button></div>` : ""}
+      ${r.tier > 1 ? `<div class="row" style="justify-content:center"><button class="btn ghost" onclick="sheet()">✏️ 고쳐서 등급 올리기</button><button class="btn ghost" onclick="${P.custom ? "begin()" : `open_('${P.id}')`}">🎤 다시 인터뷰하기</button></div>` : ""}
     </div>
     <div id="card">
       <div style="font-size:.8rem;font-weight:900;letter-spacing:.15em;color:#999">역사 신문 · 특별 인터뷰</div>
       <h3>📰 ${esc(o.title || P.name + " 인터뷰")}</h3>
-      <div class="meta">${P.emoji} ${esc(P.name)} (${esc(P.years)}) · ${esc(P.no)} ${esc(P.lecture)} · 기자 ${esc(o.name||"이름 없음")} · ${new Date().toLocaleDateString("ko-KR")}</div>
+      <div class="meta">${P.emoji} ${esc(P.name)}${P.years ? " (" + esc(P.years) + ")" : ""} · ${esc(P.no)} ${esc(P.lecture)} · 기자 ${esc(o.name||"이름 없음")} · ${new Date().toLocaleDateString("ko-KR")}</div>
       <div style="display:inline-block;background:${tc};color:#fff;border-radius:20px;padding:4px 12px;font-weight:900">${r.badge} (${r.score}/${r.max})</div>
       <dl>
         ${asked.map((a,i)=>`<dt>Q${i+1}. ${esc(a.q)}</dt><dd>${esc(o["a"+(i+1)])}</dd>`).join("")}
@@ -295,6 +382,7 @@ function finish(){
         ${o.qa?`<dt>❓ 궁금한 내용 Q&A</dt><dd>${esc(o.qa)}</dd>`:""}
         <dt>🔑 사용한 키워드</dt><dd>${r.kw.length ? r.kw.map(esc).join(", ") : "—"}</dd>
       </dl>
+      ${P.src ? `<p style="margin:10px 0 0;font-size:.78rem;color:#888">자료 출처: 위키백과 「${esc(P.name)}」 (CC BY-SA)</p>` : ""}
       <p style="margin:12px 0 0;font-size:.78rem;color:#999">역사는 삶이다! · 춘쌤의 한국사 · 역사 인물 가상 인터뷰</p>
     </div>
     <div class="row" style="justify-content:center">
