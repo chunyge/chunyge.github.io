@@ -130,8 +130,19 @@
   </section>
 
   <section class="act" id="activity">
-    <h2>🧩 활동 정리 · Quest 3 AI 멘토링으로 배움 연결하기</h2>
-    <p class="lead">수업이 끝나면 셋 중 <b>하나를 골라</b> 직접 풀어 보세요. 학습지의 QR 코드와 같은 곳으로 연결돼요. 결과는 패들렛에 올려요!</p>
+    <h2>🧩 활동 정리</h2>
+    <h3 style="margin:10px 0 4px">Quest 2 · 챗봇과 함께 역사 속으로 (택1)</h3>
+    <p class="lead">학습지의 Quest 2 QR과 같은 활동이에요. 셋 중 하나를 골라 1·2·3차 질문을 정리해요.</p>
+    <div class="q3" style="margin-bottom:22px">
+      <a href="https://m.site.naver.com/1Jtxh" target="_blank" rel="noopener" style="background:#1565c0">
+        <div class="ic">🎤</div><b>역사 인물 가상 인터뷰</b><span>역사 속 인물에게 직접 묻고 답을 들어요</span><em>시작하기 ▶</em></a>
+      <a href="what-if/" target="_blank" rel="noopener" style="background:#7b4fd6">
+        <div class="ic">🔀</div><b>만약에 한국사 <small style="background:#ffd54f;color:#333;border-radius:8px;padding:1px 6px;font-size:.7rem">NEW</small></b><span>역사의 갈림길을 골라 상상하고 실제 역사와 비교해요</span><em>시작하기 ▶</em></a>
+      <a href="https://m.site.naver.com/1SHco" target="_blank" rel="noopener" style="background:#00897b">
+        <div class="ic">⚖️</div><b>챗봇과 토론하기</b><span>챗봇과 찬반 토론을 하며 근거를 다듬어요</span><em>시작하기 ▶</em></a>
+    </div>
+    <h3 style="margin:10px 0 4px">Quest 3 · AI 멘토링으로 배움 연결하기 (택1)</h3>
+    <p class="lead">수업이 끝나면 셋 중 <b>하나를 골라</b> 직접 풀어 보세요. 결과는 패들렛에 올려요!</p>
     <div class="q3">
       <a href="https://chunyge1.my.canva.site/" target="_blank" rel="noopener" style="background:#7b5cc4">
         <div class="ic">🤖</div><b>AI 멘토링</b><span>AI를 가르치기 · 오늘 배운 내용을 내가 선생님이 되어 AI에게 설명해요</span><em>시작하기 ▶</em></a>
@@ -264,6 +275,9 @@ const BOOK2 = [
     "드디어 우리가 사는 오늘에 도착했어. 민주주의와 평화 통일, 우리 시대의 과제는 무엇일까?")
 ];
 
+/* 만약에 한국사 시나리오가 있는 강좌 */
+const WHATIF = Object.fromEntries(["h1-01","h1-02","h1-03","h1-04","h1-05","h1-07","h1-08","h1-09","h1-10","h1-11","h1-12","h2-02","h2-07","h2-08"].map(id => [id + ".pdf", id]));
+
 /* ── 화면 그리기 ── */
 function station(s, i, openFirst){
   const e = ERAS[s.era];
@@ -271,6 +285,7 @@ function station(s, i, openFirst){
     <div class="lesson">
       <span class="no">${l.no}</span>
       <div class="t"><b>${l.t}</b>${l.p ? `<i>교과서 ${l.p}쪽</i>` : ""}${l.q ? `<q>${l.q}</q>` : ""}</div>
+      ${WHATIF[l.f] ? `<a class="btn" href="what-if/#${WHATIF[l.f]}" target="_blank" rel="noopener">🔀 만약에</a>` : ""}
       <a class="btn" href="files/${l.f}" target="_blank" rel="noopener">학습지 PDF</a>
     </div>`).join("");
   return `
