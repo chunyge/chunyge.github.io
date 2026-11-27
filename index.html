@@ -185,8 +185,15 @@ const ERAS = {
   l12: { emoji:"📨", name:"전령이", role:"헤이그 특사 소식을 전한 전령", c:"#6d4c41", bg:"#f3ebe8" },
   l13: { emoji:"🔥", name:"의병이", role:"나라를 지킨 의병",            c:"#d84315", bg:"#fdece5" },
   l14: { emoji:"🏛️", name:"유산이", role:"문화유산 탐험가",            c:"#c78b00", bg:"#fff5d9" },
-  indep:{ emoji:"✊", name:"만세",   role:"일제강점기 · 독립운동 학생",  c:"#d64933", bg:"#fdebe7" },
-  today:{ emoji:"🕊️", name:"평화",   role:"현대 · 민주시민",            c:"#2e7d32", bg:"#e8f5e9" }
+  m1: { emoji:"🧺", name:"쌀순이", role:"산미 증식 계획 속 농민",      c:"#8d6e63", bg:"#f3ece9" },
+  m2: { emoji:"✊", name:"만세",   role:"3·1 운동에 나선 학생",        c:"#d64933", bg:"#fdebe7" },
+  m3: { emoji:"🖋️", name:"임정이", role:"상하이 임시정부 직원",        c:"#1565c0", bg:"#e6f0fb" },
+  m4: { emoji:"🐎", name:"청산이", role:"만주 벌판의 독립군",          c:"#4e5d2f", bg:"#edf1e3" },
+  m5: { emoji:"📚", name:"신간이", role:"신간회·학생 운동의 학생",      c:"#6a1b9a", bg:"#f2e7f7" },
+  m6: { emoji:"🌅", name:"광복이", role:"한국광복군 대원",             c:"#ef6c00", bg:"#fff0e0" },
+  m7: { emoji:"🎒", name:"피란이", role:"전쟁 속 피란민 소년",          c:"#546e7a", bg:"#ebf0f2" },
+  m8: { emoji:"📣", name:"외침이", role:"민주화 운동 대학생",           c:"#c62828", bg:"#fbe7e7" },
+  m9: { emoji:"🕊️", name:"평화",   role:"오늘의 민주시민",             c:"#2e7d32", bg:"#e8f5e9" }
 };
 
 /* ── 강좌 데이터 (학습지 목차 그대로) ── */
@@ -231,32 +238,37 @@ const BOOK1 = [
     "시대를 가로질러 보물찾기! 문화유산과 경제·신분 제도의 변화를 주제별로 탐구해 보자.")
 ];
 
+const M = (n, title, p, q, f, say) => ({ era:"m"+n, title:`${n}강. ${title}`, sub:`교과서 ${p}쪽`, say,
+  lessons:[{ no:`생각노트 ${n}`, t:title, p, q, f }] });
 const BOOK2 = [
-  { era:"guide", title:"출발역 · 오리엔테이션", sub:"생각노트 사용법 · 내가 독립운동가라면?",
+  { era:"guide", title:"1부 Start. 내가 독립운동가라면?", sub:"출발역 · 생각노트 사용법",
     say:"2권에 온 걸 환영해! 이번엔 우리가 <b>독립운동가</b>가 되어 시대를 건너 볼 거야.",
     lessons:[
       { no:"가이드", t:"생각노트 활용 가이드", f:"h2-guide.pdf" },
-      { no:"Start", t:"1부 Start · 내가 독립운동가라면?", q:"일제 강점기, 나는 어떤 독립운동가처럼 살았을까?", f:"h2-00-start.pdf" },
+      { no:"Start", t:"내가 독립운동가라면?", q:"일제 강점기, 나는 어떤 독립운동가처럼 살았을까?", f:"h2-00-start.pdf" },
       { no:"전체", t:"2026 춘샘의 한국사 2 학습지 전체", f:"h2-all.pdf" }
     ]},
-  { era:"indep", title:"독립의 길", sub:"1부 · 일제 강점기와 독립운동",
-    say:"대한 독립 만세! 나는 만세야. 빼앗긴 나라를 되찾으려 한 사람들의 발자취를 따라가 보자.",
-    lessons:[
-      { no:"1강", t:"일본의 식민지 지배 정책과 수탈", p:"8~9, 20~23, 44~49", q:"왜 일본은 식민 지배 정책을 계속 바꿨을까?", f:"h2-01.pdf" },
-      { no:"2강", t:"독립운동사 1 (국외 · 1910년대 ~ 3·1 운동)", p:"10~15", q:"왜 독립운동가들은 저항했을까?", f:"h2-02.pdf" },
-      { no:"3강", t:"독립운동사 2 (대한민국 임시정부의 역사)", p:"16~19", q:"왜 대한민국 임시정부를 배워야 할까?", f:"h2-03.pdf" },
-      { no:"4강", t:"독립운동사 3 (1920~30년대 무장투쟁·의열투쟁)", p:"24~27, 52~55", q:"왜 이렇게 많은 사람들이 독립운동에 참여했을까?", f:"h2-04.pdf" },
-      { no:"5강", t:"독립운동사 4 (국내의 독립운동들)", p:"28~43", q:"왜 신간회를 배워야 할까?", f:"h2-05.pdf" },
-      { no:"6강", t:"광복을 위한 노력 (1930~40년대 독립운동 통합)", p:"50~59", q:"왜 독립운동가들은 포기하지 않았을까?", f:"h2-06.pdf" }
-    ]},
-  { era:"today", title:"민주 광장", sub:"2부 · 해방 이후 대한민국",
-    say:"해방부터 오늘까지! 분단과 전쟁, 민주화를 지나 우리가 사는 지금에 도착할 거야.",
-    lessons:[
-      { no:"2부", t:"반별 대항전 · 최빈국에서 선진국으로 레벨업! / WHY 현대사?", f:"h2-part2.pdf" },
-      { no:"7강", t:"해방 ~ 한국전쟁", p:"62~83", q:"왜 분단을 막지 못했을까?", f:"h2-07.pdf" },
-      { no:"8강", t:"독재와 민주화 운동", p:"84~117", q:"왜 우리나라 헌법은 계속 바뀌었을까?", f:"h2-08.pdf" },
-      { no:"9강", t:"민주주의 발전과 통일을 위한 노력", p:"120~149", q:"우리 시대의 과제는 무엇일까?", f:"h2-09.pdf" }
-    ]}
+  M(1, "일본의 식민지 지배 정책과 수탈", "8~9, 20~23, 44~49", "왜 일본은 식민 지배 정책을 계속 바꿨을까?", "h2-01.pdf",
+    "땀 흘려 지은 쌀이 바다 건너 일본으로 실려 갔어. 일제가 어떻게 지배 방식을 바꿔 가며 우리를 수탈했는지 살펴보자."),
+  M(2, "독립운동사 1 (국외 · 1910년대 ~ 3·1 운동)", "10~15", "왜 독립운동가들은 저항했을까?", "h2-02.pdf",
+    "대한 독립 만세! 나라 밖에서 키운 독립의 씨앗이 어떻게 3·1 운동으로 터져 나왔는지 함께 가 보자."),
+  M(3, "독립운동사 2 (대한민국 임시정부의 역사)", "16~19", "왜 대한민국 임시정부를 배워야 할까?", "h2-03.pdf",
+    "여기는 상하이 임시정부 청사야. 나라를 잃었어도 정부를 세운 사람들의 이야기를 들려줄게."),
+  M(4, "독립운동사 3 (1920~30년대 무장투쟁 · 의열투쟁)", "24~27, 52~55", "왜 이렇게 많은 사람들이 독립운동에 참여했을까?", "h2-04.pdf",
+    "만주 벌판을 달리는 독립군이야! 무장 투쟁과 의열 투쟁, 목숨을 건 싸움의 현장으로 출발!"),
+  M(5, "독립운동사 4 (국내의 독립운동들)", "28~43", "왜 신간회를 배워야 할까?", "h2-05.pdf",
+    "나라 안에서도 싸움은 계속됐어. 실력 양성, 신간회, 학생 운동까지 국내의 다양한 저항을 만나 보자."),
+  M(6, "광복을 위한 노력 (1930~40년대 독립운동 통합)", "50~59", "왜 독립운동가들은 포기하지 않았을까?", "h2-06.pdf",
+    "흩어졌던 힘을 하나로 모아 광복을 준비했어. 한국광복군과 건국 준비의 이야기를 따라가 보자."),
+  { era:"guide", title:"2부 Start. 최빈국에서 선진국으로 레벨업!", sub:"반별 대항전 · WHY 현대사를 배워야 할까?",
+    say:"2부부터는 해방된 대한민국의 이야기야. 우리 반이 함께 레벨업해 볼까?",
+    lessons:[{ no:"2부", t:"반별 대항전 · WHY 현대사를 배워야 할까?", q:"대한민국은 (   )이다. 이유는?", f:"h2-part2.pdf" }]},
+  M(7, "해방 ~ 한국전쟁", "62~83", "왜 분단을 막지 못했을까?", "h2-07.pdf",
+    "광복의 기쁨도 잠시, 나라는 둘로 나뉘고 전쟁이 일어났어. 피란길에서 본 이야기를 들려줄게."),
+  M(8, "독재와 민주화 운동", "84~117", "왜 우리나라 헌법은 계속 바뀌었을까?", "h2-08.pdf",
+    "4·19 혁명부터 6월 민주 항쟁까지! 민주주의를 지키려고 거리로 나선 사람들을 만나 보자."),
+  M(9, "민주주의 발전과 통일을 위한 노력", "120~149", "우리 시대의 과제는 무엇일까?", "h2-09.pdf",
+    "드디어 우리가 사는 오늘에 도착했어. 민주주의와 평화 통일, 우리 시대의 과제는 무엇일까?")
 ];
 
 const GAMES1 = [
@@ -301,14 +313,19 @@ document.getElementById("games1").innerHTML = games(GAMES1);
 document.getElementById("games2").innerHTML = games(GAMES2);
 
 /* 위쪽 캐릭터 줄과 마을: 누르면 그 시대로 이동 */
-const order = ["l1","l2","l3","l4","l5","l6","l7","l8","l9","l10","l11","l12","l13","l14","indep","today"];
-document.getElementById("crew").innerHTML = order.map(k => `<span title="${ERAS[k].name} · ${ERAS[k].role}" onclick="goEra('${k}')">${ERAS[k].emoji}</span>`).join("");
+const CREW = { p1:["l1","l2","l3","l4","l5","l6","l7","l8","l9","l10","l11","l12","l13","l14"],
+               p2:["m1","m2","m3","m4","m5","m6","m7","m8","m9"] };
+function renderCrew(id){
+  document.getElementById("crew").innerHTML = CREW[id].map(k => `<span title="${ERAS[k].name} · ${ERAS[k].role}" onclick="goEra('${k}')">${ERAS[k].emoji}</span>`).join("");
+}
+renderCrew("p1");
 const houses = [["#e3b98a",58],["#8fd0e3",76],["#9fdccd",66],["#c3b2ee",92],["#f3a1c0",70],["#ffd772",84],["#f4a291",62],["#9ed6a0",80]];
 document.getElementById("village").innerHTML = houses.map(([c,h]) => `<div class="house" style="height:${h}px;background:${c}"></div>`).join("");
 
 function showPanel(id){
   document.querySelectorAll(".tabs button").forEach(b => b.classList.toggle("on", b.dataset.p === id));
   document.querySelectorAll(".panel").forEach(p => p.classList.toggle("on", p.id === id));
+  renderCrew(id);
 }
 document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => showPanel(b.dataset.p));
 function goEra(k){
