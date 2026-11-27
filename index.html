@@ -63,6 +63,7 @@
   .lesson .t i{font-style:normal;font-size:.85rem;color:#777}
   .lesson .t q{display:block;font-size:.88rem;color:var(--c);font-weight:700;margin-top:2px}
   .btn{display:inline-block;border:2px solid var(--c,var(--accent));color:var(--c,var(--accent));background:#fff;border-radius:20px;padding:5px 12px;font-weight:800;font-size:.85rem;white-space:nowrap}
+  .btn.video{background:#e53935;border-color:#e53935;color:#fff}
   .btn:hover{background:var(--c,var(--accent));color:#fff}
   /* 활동 정리 */
   .act{margin-top:28px;background:#fff;border:4px solid #1e88a8;border-radius:20px;padding:18px}
@@ -282,6 +283,32 @@ const BOOK2 = [
     "드디어 우리가 사는 오늘에 도착했어. 민주주의와 평화 통일, 우리 시대의 과제는 무엇일까?")
 ];
 
+/* 수업 영상 (패들렛 '춘쌤의 역사 발자국' 1·2학기 수업 영상과 같은 링크) */
+const VIDEO = {
+  "h1-01.pdf":"o2smz9gj2bgjrju",
+  "h1-02.pdf":"ymal6gy9qf36vf9",
+  "h1-03.pdf":"n2yw588dqd21geo",
+  "h1-04.pdf":"etxc3j1za3ho614",
+  "h1-05.pdf":"gyetjkdml17mmux",
+  "h1-06.pdf":"0ozp9p4t1a04qyz",
+  "h1-07.pdf":"ntn3q5odbfo40qy",
+  "h1-08.pdf":"a5chtog6z4mngiw",
+  "h1-09.pdf":"3mmkiub1qhcqoa3",
+  "h1-10.pdf":"93uzo1u6l9vu46h",
+  "h1-11.pdf":"jy7zua8t34wq7mx",
+  "h1-12.pdf":"r9jamktmzvjyxdr",
+  "h1-13.pdf":"p73ztlasg6x1u8b",
+  "h2-01.pdf":"dowts2ybq5gg38p",
+  "h2-02.pdf":"1omp4w4ziqv1543",
+  "h2-03.pdf":"7zvflwvdkm0xmjg",
+  "h2-04.pdf":"3xl9yh5h7qqpwb9",
+  "h2-05.pdf":"foy4833q70vhz7f",
+  "h2-06.pdf":"oluxuiz1zfod4ld",
+  "h2-07.pdf":"zf8qusyam3ont94",
+  "h2-08.pdf":"2ys5l321tctrsor",
+  "h2-09.pdf":"x0mxlk5lfo724ix"
+};
+
 /* 만약에 한국사 시나리오가 있는 강좌 */
 const WHATIF = Object.fromEntries(["h1-01","h1-02","h1-03","h1-04","h1-05","h1-07","h1-08","h1-09","h1-10","h1-11","h1-12","h2-02","h2-07","h2-08"].map(id => [id + ".pdf", id]));
 
@@ -296,6 +323,7 @@ function station(s, i, openFirst){
     <div class="lesson">
       <span class="no">${l.no}</span>
       <div class="t"><b>${l.t}</b>${l.p ? `<i>교과서 ${l.p}쪽</i>` : ""}${l.q ? `<q>${l.q}</q>` : ""}</div>
+      ${VIDEO[l.f] ? `<a class="btn video" href="https://canva.link/${VIDEO[l.f]}" target="_blank" rel="noopener">▶ 수업 영상</a>` : ""}
       ${WHATIF[l.f] ? `<a class="btn" href="what-if/#${WHATIF[l.f]}" target="_blank" rel="noopener">🔀 만약에</a>` : ""}
       ${DEBATE[l.f] ? `<a class="btn" href="debate/#${DEBATE[l.f]}" target="_blank" rel="noopener">⚖️ 토론</a>` : ""}
       ${INTERVIEW[l.f] ? `<a class="btn" href="interview/#${INTERVIEW[l.f]}" target="_blank" rel="noopener">🎤 인터뷰</a>` : ""}
