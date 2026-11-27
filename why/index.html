@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3why 근본 질문 탐구 · 춘쌤의 한국사</title>
+<style>
+  :root{--ink:#2b2b3a;--paper:#f4f8f2;--line:#d8e8d2;--c:#2e7d32}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Pretendard","Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:var(--ink);background:var(--paper)}
+  header{background:linear-gradient(135deg,#1b5e20,#43a047);color:#fff;text-align:center;padding:46px 16px 22px;position:relative}
+  header small{letter-spacing:.12em;opacity:.85;font-weight:700}
+  header h1{margin:4px 0 6px;font-size:clamp(1.7rem,6vw,2.4rem)}
+  header p{margin:0;opacity:.92}
+  .back{position:absolute;left:12px;top:12px;background:rgba(255,255,255,.2);color:#fff;border-radius:20px;padding:6px 12px;text-decoration:none;font-weight:800;font-size:.85rem}
+  .wrap{max-width:780px;margin:0 auto;padding:18px 14px 50px}
+  .panel{background:#fff;border:3px solid var(--c);border-radius:20px;padding:18px;margin:12px 0}
+  .steps{display:flex;gap:6px;justify-content:center;margin:2px 0 0;flex-wrap:wrap}
+  .steps span{font-size:.78rem;font-weight:800;border-radius:20px;padding:4px 10px;background:#e3efe0;color:#6b8a66}
+  .steps span.on{background:var(--c);color:#fff}
+  label{display:block;font-weight:800;margin:16px 0 6px;font-size:1.02rem}
+  label small{font-weight:600;color:#888}
+  .help{font-size:.86rem;color:#5f6f5b;margin:0 0 6px;line-height:1.55}
+  textarea,input,select{width:100%;font-family:inherit;font-size:1rem;border:2px solid var(--line);border-radius:12px;padding:10px;background:#fff;resize:vertical}
+  textarea:focus,input:focus,select:focus{outline:none;border-color:var(--c)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .btn{font-family:inherit;font-weight:800;cursor:pointer;border:0;border-radius:12px;padding:12px 16px;font-size:1rem;color:#fff;background:var(--c)}
+  .btn.ghost{background:#fff;color:var(--c);border:2px solid var(--c)}
+  .chain{position:relative;margin:6px 0 0 14px;padding-left:22px;border-left:4px dotted #a5d6a7}
+  .link{position:relative;background:#f7fbf6;border:2px solid var(--line);border-radius:14px;padding:10px 12px;margin:10px 0}
+  .link::before{content:"";position:absolute;left:-33px;top:14px;width:18px;height:18px;border-radius:50%;background:var(--c);border:3px solid #fff}
+  .link b{color:var(--c)}
+  .link p{margin:4px 0 0;line-height:1.55;font-size:.95rem}
+  .src{font-size:.82rem;color:#777}
+  .warn{background:#fff8e1;border-radius:10px;padding:8px 10px;font-size:.88rem;margin-top:6px}
+  .good{background:#e8f5e9;border-radius:10px;padding:8px 10px;font-size:.88rem;margin-top:6px}
+  .types{display:flex;flex-wrap:wrap;gap:6px}
+  .types label{margin:0;font-weight:700;font-size:.92rem;border:2px solid var(--line);border-radius:20px;padding:6px 12px;cursor:pointer;background:#fff}
+  .types input{width:auto;margin-right:4px}
+  .tip{background:#eef6ec;border-radius:12px;padding:10px 12px;font-size:.9rem;line-height:1.6}
+  #card{background:#fff;border:4px solid var(--c);border-radius:20px;padding:20px;max-width:640px;margin:12px auto 0}
+  #card .head{font-size:.8rem;font-weight:900;letter-spacing:.15em;color:#999}
+  #card h3{margin:4px 0;font-size:1.3rem;line-height:1.4}
+  #card .meta{color:#777;font-size:.85rem;margin-bottom:10px}
+  #card dt{font-weight:900;margin-top:10px;color:var(--c)}
+  #card dd{margin:2px 0 0;line-height:1.6;white-space:pre-wrap}
+  .note{font-size:.85rem;color:#888;text-align:center;margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+  <a class="back" href="../">← 자료실</a>
+  <small>3WHY · 질문의 뿌리 찾기</small>
+  <h1>🌱 3why 근본 질문 탐구</h1>
+  <p>"왜?"를 세 번 이어 물으면, 사건의 뿌리(근본 원인)가 보여요.</p>
+</header>
+<main class="wrap" id="app"></main>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+const app = document.getElementById("app");
+const esc = v => String(v ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem("why:"+k) || "null"); } catch { return null; } },
+  set(k,v){ try { localStorage.setItem("why:"+k, JSON.stringify(v)); } catch {} }
+};
+function toast(msg){
+  const d = document.createElement("div");
+  d.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2b2b3a;color:#fff;padding:12px 18px;border-radius:12px;font-weight:700;z-index:9;max-width:90%;text-align:center";
+  d.textContent = msg; document.body.appendChild(d); setTimeout(()=>d.remove(), 3000);
+}
+
+/* 학습지 목차 + 강좌별 추천 출발 질문(학습지 디딤 질문을 바탕으로, 원인을 묻는 꼴로 다듬음) */
+const LECTURES = [
+  ["한국사 1 · 1강. 선사시대 ~ 삼국시대","왜 고조선을 배워야 할까?"],
+  ["한국사 1 · 2강. 남북국 시대(통일신라/발해)","왜 남북국 시대를 기억해야 할까?"],
+  ["한국사 1 · 3강. 고려의 건국과 발전","왜 고려를 배워야 할까?"],
+  ["한국사 1 · 4강. 고려 전기의 대외관계와 지배층 변화 1","왜 고려의 외교정책을 배워야 할까?"],
+  ["한국사 1 · 5강. 고려 후기의 대외관계와 지배층 변화 2","왜 무신 정권은 강화도로 수도를 옮겼을까?"],
+  ["한국사 1 · 6강. 조선 전기(건국과 발전 ~ 붕당의 형성)","왜 조선을 배워야 할까?"],
+  ["한국사 1 · 7강. 조선 후기(양난과 정치 변화)","왜 조선의 변화 과정에 주목해야 할까?"],
+  ["한국사 1 · 8강. 흥선대원군의 집권","왜 흥선대원군은 통상을 거부했을까?"],
+  ["한국사 1 · 9강. 강화도 조약 ~ 갑신정변","김옥균, 그는 왜 갑신정변을 일으켜야 했을까?"],
+  ["한국사 1 · 10강. 동학농민운동 ~ 갑오개혁","전봉준, 그는 왜 봉기를 일으켜야 했을까?"],
+  ["한국사 1 · 11강. 독립협회와 대한제국","왜 독립협회는 해산되었을까?"],
+  ["한국사 1 · 12강. 일본의 대한제국 강제 병합","왜 대한제국은 국권을 지키지 못했을까?"],
+  ["한국사 1 · 13강. 일본에 저항하다!","무엇이 그들을 의병으로 만든 것일까?"],
+  ["한국사 1 · 14강. 주제탐구(문화와 사상, 사회와 경제)","왜 조선 후기에 신분제가 흔들렸을까?"],
+  ["한국사 2 · 1강. 일본의 식민지 지배 정책과 수탈","왜 일본은 식민 지배 정책을 계속 바꿨을까?"],
+  ["한국사 2 · 2강. 독립운동사 1 (국외 · 1910년대 ~ 3·1 운동)","왜 독립운동가들은 저항했을까?"],
+  ["한국사 2 · 3강. 독립운동사 2 (대한민국 임시정부의 역사)","왜 대한민국 임시정부를 배워야 할까?"],
+  ["한국사 2 · 4강. 독립운동사 3 (무장투쟁 · 의열투쟁)","왜 이렇게 많은 사람들이 독립운동에 참여했을까?"],
+  ["한국사 2 · 5강. 독립운동사 4 (국내의 독립운동들)","왜 신간회를 배워야 할까?"],
+  ["한국사 2 · 6강. 광복을 위한 노력","왜 독립운동가들은 포기하지 않았을까?"],
+  ["한국사 2 · 7강. 해방 ~ 한국전쟁","왜 분단을 막지 못했을까?"],
+  ["한국사 2 · 8강. 독재와 민주화 운동","왜 우리나라 헌법은 계속 바뀌었을까?"],
+  ["한국사 2 · 9강. 민주주의 발전과 통일을 위한 노력","우리 시대의 과제는 무엇일까?"]
+];
+const ROOT_TYPES = ["정치(권력·제도)","경제(땅·세금·생계)","사회(신분·계층)","국제 관계(외세·전쟁)","사상·종교·문화","개인의 선택·가치관"];
+let S = null;
+
+/* 낱말 뽑기 (조사·동사 꼴은 빼요) : 질문이 앞의 답과 이어졌는지 볼 때 써요 */
+function nouns(t){
+  return String(t||"").replace(/[?!.,~'"()·]/g," ").split(/\s+/)
+    .map(w => { let x = w, p; do { p = x; x = x.replace(/(에서는|에서도|으로는|으로|에서|에게|께서|이란|까지|부터|은|는|이|가|을|를|에|의|도|와|과|로|란|라)$/,""); } while (x !== p && x.length > 2); return x; })
+    .filter(w => w.length >= 2 && !/(하|했|었|았|니|요|까|죠|네|다|해서|어서|아서|하고|하게|하지|했던|하던|었을|았을|했을|일까|을까|ㄹ까)$/.test(w) && !["그래서","그렇다면","때문","왜냐하면","그리고","무엇","어떻게","정말","우리"].includes(w));
+}
+function linked(prevAnswer, nextQuestion){
+  // 다음 질문 속 낱말이 앞 답에 나오는지 (앞 답 → 질문, 질문 → 앞 답 양쪽으로 확인)
+  const A = String(prevAnswer||""), Q = String(nextQuestion||"");
+  const hits = new Set();
+  nouns(Q).forEach(w => { if (A.includes(w)) hits.add(w); });
+  nouns(A).forEach(w => { if (Q.includes(w)) hits.add(w); });
+  return [...hits];
+}
+
+/* ① 출발 질문 */
+function home(){
+  window.scrollTo(0,0); const last = store.get("last") || {};
+  app.innerHTML = `
+    <div class="steps"><span class="on">① 출발 질문</span><span>② 왜 ×3</span><span>③ 뿌리 확인</span><span>④ 등급</span></div>
+    <div class="panel">
+      <div class="tip">🌱 <b>3why란?</b> 하나의 사건에 "왜?"를 묻고, 그 <b>답에서 다시 "왜?"</b>를 물어요. 세 번 내려가면 겉으로 보이는 이유 아래에 있는 <b>근본 원인</b>에 닿아요.<br>
+      예) 왜 동학 농민군이 일어났을까? → 탐관오리의 수탈 때문 → <i>왜 수탈이 심했을까?</i> → 세도 정치로 매관매직이 퍼졌기 때문 → <i>왜 매관매직이 퍼졌을까?</i> → 왕권이 약해지고 소수 가문이 권력을 독점했기 때문</div>
+      <label>📚 오늘 배우는 강좌</label>
+      <select id="lec" onchange="fillQ()">${LECTURES.map(([l]) => `<option ${l===last.lec?"selected":""}>${esc(l)}</option>`).join("")}</select>
+      <label>❓ 출발 질문 <small>(강좌별 추천 질문이 들어가 있어요. 내 질문으로 바꿔도 돼요)</small></label>
+      <input id="q0" maxlength="80">
+      <p class="help">좋은 출발 질문은 <b>구체적인 사건</b>을 가리켜요. "왜 ○○○은 △△△했을까?" 꼴로 써 보세요.</p>
+      <label>🙋 학번·이름</label>
+      <input id="name" maxlength="30" placeholder="예: 20301 홍길동" value="${esc(store.get("name")||"")}">
+      <div class="row"><button class="btn" onclick="start()">뿌리 찾기 시작 🌱</button></div>
+    </div>`;
+  fillQ();
+}
+function fillQ(){ const l = document.getElementById("lec").value; document.getElementById("q0").value = (LECTURES.find(x => x[0] === l) || ["",""])[1]; }
+function start(){
+  const lec = document.getElementById("lec").value, q0 = document.getElementById("q0").value.trim(), name = document.getElementById("name").value.trim();
+  if (q0.length < 6) { toast("출발 질문을 써 주세요!"); return; }
+  if (!name) { toast("학번·이름을 써 주세요!"); return; }
+  store.set("name", name); store.set("last", { lec });
+  S = Object.assign({ lec, q0, name, w:[{},{},{}] }, store.get("ans:" + lec + "|" + q0) || {}, { lec, q0, name });
+  S.id = lec + "|" + q0; step(0);
+}
+function save(){ store.set("ans:" + S.id, S); }
+
+/* ② 왜 ×3 : 한 단계씩, 앞의 답에서 다음 질문을 만들어요 */
+const LEVEL = [
+  { t:"1단계 · 직접적인 이유", help:"사건 바로 앞에 있던 이유를 써요. 교과서에서 찾은 사실로!" },
+  { t:"2단계 · 그 이유의 이유", help:"1단계 답이 '왜' 생겼는지 파고들어요. 사람·제도·상황을 살펴봐요." },
+  { t:"3단계 · 뿌리(근본 원인)", help:"더 이상 '왜?'를 물으면 같은 답이 나올 만큼 깊은 원인이에요. 구조(제도·경제·국제 관계·생각)를 찾아봐요." }
+];
+function step(i){
+  window.scrollTo(0,0);
+  const prevQ = i === 0 ? S.q0 : S.w[i-1].q, prevA = i === 0 ? "" : S.w[i-1].a;
+  const cur = S.w[i] || {};
+  const defaultQ = i === 0 ? S.q0 : (cur.q || "");
+  const words = i ? nouns(prevA).slice(0,6) : [];
+  app.innerHTML = `
+    <div class="steps"><span>① 출발 질문</span><span class="on">② 왜 ×3 (${i+1}/3)</span><span>③ 뿌리 확인</span><span>④ 등급</span></div>
+    <div class="panel">
+      ${chainView(i)}
+      <label>🌱 Why ${i+1} · ${LEVEL[i].t}</label>
+      <p class="help">${LEVEL[i].help}</p>
+      ${i ? `<div class="tip">✍️ <b>앞 답에서 다음 질문 만들기</b><br>앞 답의 핵심 낱말을 넣어 "그렇다면 왜 ○○○했을까?"로 물어요.<br>앞 답의 낱말: ${words.map(w=>`<b>${esc(w)}</b>`).join(", ") || "—"}</div>` : ""}
+      <input id="wq" maxlength="100" style="margin-top:8px" placeholder="${i ? "그렇다면 왜 …?" : ""}" value="${esc(defaultQ)}" ${i===0?"readonly":""}>
+      <div id="chk"></div>
+      <label>💬 나의 답</label>
+      <textarea id="wa" rows="3" placeholder="왜냐하면 … 때문이다.">${esc(cur.a||"")}</textarea>
+      <label>📖 근거는 어디서? <small>(교과서 쪽수, 학습지, 사료 이름)</small></label>
+      <input id="ws" maxlength="60" placeholder="예: 교과서 124쪽, 학습지 3쪽 사료" value="${esc(cur.s||"")}">
+      <div class="row">
+        <button class="btn ghost" onclick="${i ? `step(${i-1})` : "home()"}">← 이전</button>
+        <button class="btn" onclick="next(${i})">${i < 2 ? "다음 '왜?' 로 내려가기 ⬇" : "뿌리 확인하기 →"}</button>
+      </div>
+    </div>`;
+  const wq = document.getElementById("wq");
+  const check = () => {
+    if (!i) return;
+    const l = linked(prevA, wq.value);
+    document.getElementById("chk").innerHTML = wq.value.trim().length < 6 ? "" :
+      l.length ? `<div class="good">🔗 앞 답의 <b>${l.map(esc).join(", ")}</b>에서 질문이 이어졌어요. 좋은 사슬이에요!</div>`
+               : `<div class="warn">⚠️ 앞 답과 이어지지 않는 질문 같아요. 앞 답의 낱말을 넣어 "그렇다면 왜 ~?"로 바꿔 보세요.</div>`;
+  };
+  wq.addEventListener("input", check); check();
+  ["wa","ws"].forEach(k => document.getElementById(k).addEventListener("input", () => { grab(i); save(); }));
+}
+function grab(i){ S.w[i] = { q: document.getElementById("wq").value.trim(), a: document.getElementById("wa").value.trim(), s: document.getElementById("ws").value.trim() }; }
+function next(i){
+  grab(i); const w = S.w[i];
+  if (w.q.length < 6) { toast("질문을 써 주세요! (그렇다면 왜 …?)"); return; }
+  if (w.a.length < 15) { toast("답을 한두 문장으로 써 주세요! (왜냐하면 … 때문이다)"); return; }
+  if (i && w.a === S.w[i-1].a) { toast("앞 단계와 같은 답이에요. 한 단계 더 깊이 들어가 보세요!"); return; }
+  save(); i < 2 ? step(i+1) : root();
+}
+function chainView(upto){
+  const rows = [`<div class="link"><b>❓ 출발</b><p>${esc(S.q0)}</p></div>`];
+  for (let k = 0; k < upto; k++) rows.push(`<div class="link"><b>Why ${k+1}</b> ${k ? `<span class="src">— ${esc(S.w[k].q)}</span>` : ""}<p>${esc(S.w[k].a)}</p>${S.w[k].s ? `<span class="src">📖 ${esc(S.w[k].s)}</span>` : ""}</div>`);
+  return `<div class="chain">${rows.join("")}</div>`;
+}
+
+/* ③ 뿌리 확인 : 근본 원인을 한 문장으로, 종류를 고르고, '사라진다면?'으로 검증 */
+function root(){
+  window.scrollTo(0,0);
+  app.innerHTML = `
+    <div class="steps"><span>① 출발 질문</span><span>② 왜 ×3</span><span class="on">③ 뿌리 확인</span><span>④ 등급</span></div>
+    <div class="panel">
+      ${chainView(3)}
+      <label>🌳 근본 원인을 한 문장으로</label>
+      <p class="help">세 번의 '왜'를 거쳐 찾은 뿌리를 정리해요. "결국 ○○○ 때문에 △△△이(가) 일어났다."</p>
+      <textarea id="rc" rows="2" placeholder="결국 … 때문에 … 이(가) 일어났다.">${esc(S.rc||"")}</textarea>
+      <label>🧩 이 뿌리는 어떤 종류인가요? <small>(여러 개 골라도 돼요)</small></label>
+      <div class="types">${ROOT_TYPES.map(t => `<label><input type="checkbox" value="${esc(t)}" ${(S.rt||[]).includes(t)?"checked":""}>${esc(t)}</label>`).join("")}</div>
+      <label>🧪 뿌리 검증하기 : 이 원인이 없었다면 사건이 일어나지 않았을까?</label>
+      <div class="types" id="testSel">${["일어나지 않았을 것이다","다른 모습으로 일어났을 것이다","그래도 일어났을 것이다"].map(t => `<label><input type="radio" name="tst" value="${esc(t)}" ${S.test===t?"checked":""}>${esc(t)}</label>`).join("")}</div>
+      <textarea id="tw" rows="2" style="margin-top:8px" placeholder="그렇게 생각하는 이유는 …">${esc(S.tw||"")}</textarea>
+      <p class="help">"그래도 일어났을 것이다"라면, 아직 더 깊은 뿌리가 있을지 몰라요. 사슬을 다시 살펴보세요!</p>
+      <label>🔑 핵심 키워드 2~5개 <small>(쉼표로 구분)</small></label>
+      <input id="kw" placeholder="예: 세도 정치, 삼정의 문란, 탐관오리" value="${esc(S.kw||"")}">
+      <label>🧭 이 뿌리는 오늘 우리 사회의 어떤 문제와 닮았나요?</label>
+      <textarea id="now" rows="2" placeholder="오늘 우리 사회에서도 …">${esc(S.now||"")}</textarea>
+      <div id="live" style="margin-top:14px"></div>
+      <div class="row"><button class="btn ghost" onclick="step(2)">← Why 3 고치기</button><button class="btn" onclick="finish()">🏅 등급 받고 카드 만들기 →</button></div>
+    </div>`;
+  const upd = () => {
+    S.rc = document.getElementById("rc").value.trim(); S.tw = document.getElementById("tw").value.trim();
+    S.kw = document.getElementById("kw").value.trim(); S.now = document.getElementById("now").value.trim();
+    S.rt = [...document.querySelectorAll('.types input[type=checkbox]:checked')].map(x => x.value);
+    const r = document.querySelector('input[name=tst]:checked'); S.test = r ? r.value : "";
+    save(); const g = grade(); document.getElementById("live").innerHTML = `<b>지금 등급 미리보기 :</b> ${g.badge} <span style="color:#888">(${g.score}/${g.max}점)</span>`;
+  };
+  app.querySelectorAll("textarea,input").forEach(el => el.addEventListener(el.type === "checkbox" || el.type === "radio" ? "change" : "input", upd));
+  upd();
+}
+
+/* ── 등급 : 역사왕 · 역사귀족 · 역사노비 ── */
+const CAUSE = ["왜냐하면","때문","그래서","따라서","그러므로","결과","결국","덕분","탓","므로","니까"];
+const NOW = ["오늘","지금","현재","우리","요즘","사회"];
+const count = (t, ws) => ws.reduce((n,w)=>n+(String(t||"").split(w).length-1),0);
+function grade(){
+  const w = S.w;
+  const chainOK = [1,2].filter(i => linked(w[i-1].a, w[i].q).length).length;
+  const srcN = w.filter(x => (x.s||"").trim().length >= 3).length;
+  const all = [w[0].a, w[1].a, w[2].a, S.rc, S.tw].join(" ");
+  const kws = String(S.kw||"").split(/[,，、]/).map(x=>x.trim()).filter(Boolean);
+  const kwHit = kws.filter(k => all.replace(/\s/g,"").includes(k.replace(/\s/g,"")));
+  const items = [
+    ["🔗 '왜' 질문이 앞의 답에서 사슬처럼 이어졌어요", chainOK, 2, "다음 질문에 앞 답의 핵심 낱말을 넣어 '그렇다면 왜 ~?'로 이어 보세요."],
+    ["📖 답마다 근거의 출처(쪽수·사료)를 밝혔어요", srcN >= 3 ? 2 : srcN >= 1 ? 1 : 0, 2, "세 답 모두에 교과서 쪽수나 사료 이름을 적어 보세요."],
+    ["🔄 원인과 결과를 이어서 설명했어요", count(all, CAUSE) >= 3 ? 1 : 0, 1, "'때문에', '그 결과', '결국' 같은 말로 원인→결과를 이어 보세요."],
+    ["🌳 근본 원인을 정리하고 종류를 찾았어요", (S.rc||"").length >= 20 && (S.rt||[]).length >= 1 ? 1 : 0, 1, "근본 원인을 한 문장으로 쓰고, 어떤 종류(정치·경제·사회…)인지 골라 보세요."],
+    ["🧪 '이 원인이 없었다면?'으로 뿌리를 검증했어요", S.test && (S.tw||"").length >= 15 ? 1 : 0, 1, "뿌리 검증에서 하나를 고르고 그 이유를 써 보세요."],
+    ["📌 역사적 근거(키워드·연도)를 썼어요", Math.min(2, (kwHit.length >= 3 ? 2 : kwHit.length >= 1 ? 1 : 0) + (/\d{3,4}\s*년/.test(all) ? 1 : 0)), 2, "답에 키워드와 연도를 넣어 보세요."],
+    ["🧭 오늘 우리 사회와 연결했어요", (S.now||"").length >= 15 && count(S.now, NOW) >= 1 ? 1 : 0, 1, "이 뿌리와 닮은 오늘 우리 사회의 모습을 써 보세요."]
+  ];
+  const score = items.reduce((n,x)=>n+x[1],0), max = items.reduce((n,x)=>n+x[2],0);
+  const tier = score >= 8 ? 1 : score >= 5 ? 2 : 3;
+  const badge = tier === 1 ? "👑 1등급 · 역사왕" : tier === 2 ? "🎩 2등급 · 역사귀족" : "🧺 3등급 · 역사노비";
+  return { score, max, tier, badge, items, kwHit };
+}
+
+/* ④ 등급 + 카드 */
+function finish(){
+  if ((S.rc||"").length < 10) { toast("근본 원인을 한 문장으로 정리해 주세요!"); return; }
+  const r = grade(), tc = ["","#c99700","#7b4fd6","#8d6e63"][r.tier];
+  const tips = r.items.filter(x => x[1] < x[2]).map(x => x[3]);
+  window.scrollTo(0,0);
+  app.innerHTML = `
+    <div class="steps"><span>① 출발 질문</span><span>② 왜 ×3</span><span>③ 뿌리 확인</span><span class="on">④ 등급</span></div>
+    <div class="panel" style="text-align:center;border-color:${tc}">
+      <div style="font-size:3rem">${r.badge.split(" ")[0]}</div>
+      <div style="font-size:1.6rem;font-weight:900;color:${tc}">${r.badge.split(" ").slice(1).join(" ")}</div>
+      <div style="color:#777;margin-top:4px">점수 ${r.score} / ${r.max}점 · 8점 이상 역사왕, 5~7점 역사귀족, 4점 이하 역사노비</div>
+      <div style="text-align:left;margin-top:14px">${r.items.map(x=>`<div style="padding:5px 0;border-bottom:1px dashed #eee">${x[1]>=x[2]?"✅":x[1]>0?"🔸":"⬜"} ${x[0]} <span style="float:right;color:#888">${x[1]}/${x[2]}</span></div>`).join("")}</div>
+      ${tips.length ? `<div style="text-align:left;background:#fff8e1;border-radius:12px;padding:10px 12px;margin-top:12px"><b>⬆️ 등급을 올리려면</b><br>${tips.map(t=>"· "+esc(t)).join("<br>")}</div>` : `<p style="font-weight:800;color:${tc}">완벽해요! 진정한 역사왕 👑</p>`}
+      ${r.tier > 1 ? `<div class="row" style="justify-content:center"><button class="btn ghost" onclick="step(0)">✏️ 왜 사슬 고치기</button><button class="btn ghost" onclick="root()">✏️ 뿌리 확인 고치기</button></div>` : ""}
+    </div>
+    <div id="card">
+      <div class="head">3WHY · 질문의 뿌리 찾기</div>
+      <h3>❓ ${esc(S.q0)}</h3>
+      <div class="meta">${esc(S.lec)} · ${esc(S.name)} · ${new Date().toLocaleDateString("ko-KR")}</div>
+      <div style="display:inline-block;background:${tc};color:#fff;border-radius:20px;padding:4px 12px;font-weight:900">${r.badge} (${r.score}/${r.max})</div>
+      <dl>
+        ${S.w.map((x,i)=>`<dt>Why ${i+1}. ${esc(x.q)}</dt><dd>${esc(x.a)}${x.s ? `\n📖 ${esc(x.s)}` : ""}</dd>`).join("")}
+        <dt>🌳 근본 원인</dt><dd>${esc(S.rc)}${(S.rt||[]).length ? `\n🧩 ${esc(S.rt.join(", "))}` : ""}</dd>
+        ${S.test ? `<dt>🧪 뿌리 검증 · 이 원인이 없었다면?</dt><dd>${esc(S.test)}${S.tw ? " — " + esc(S.tw) : ""}</dd>` : ""}
+        ${S.now ? `<dt>🧭 오늘 우리 사회와 연결</dt><dd>${esc(S.now)}</dd>` : ""}
+        <dt>🔑 사용한 키워드</dt><dd>${r.kwHit.length ? r.kwHit.map(esc).join(", ") : "—"}</dd>
+      </dl>
+      <p style="margin:12px 0 0;font-size:.78rem;color:#999">역사는 삶이다! · 춘쌤의 한국사 · 3why 근본 질문 탐구</p>
+    </div>
+    <div class="row" style="justify-content:center">
+      <button class="btn" onclick="saveImg()">🖼️ 카드 이미지로 저장</button>
+      <button class="btn ghost" onclick="home()">🌱 새 질문 탐구</button>
+    </div>
+    <p class="note">저장한 이미지(또는 화면 캡처)를 패들렛에 올리면 끝! 등급은 질문 사슬의 연결, 근거 출처, 근본 원인과 검증, 현재 연결을 보고 자동으로 매겨져요.</p>`;
+}
+function saveImg(){
+  const el = document.getElementById("card");
+  if (!window.html2canvas) { toast("이미지 저장이 안 되면 화면을 캡처해서 올려 주세요."); return; }
+  html2canvas(el, { scale: 2, backgroundColor: "#ffffff" }).then(cv => {
+    const a = document.createElement("a"); a.download = `3why_${S.name}.png`; a.href = cv.toDataURL("image/png"); a.click();
+  }).catch(() => toast("이미지 저장이 안 되면 화면을 캡처해서 올려 주세요."));
+}
+home();
+</script>
+</body>
+</html>
