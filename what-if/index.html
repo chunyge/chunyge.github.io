@@ -87,32 +87,84 @@ const store = {
   get(k){ try { return JSON.parse(localStorage.getItem("whatif:"+k) || "null"); } catch { return null; } },
   set(k,v){ try { localStorage.setItem("whatif:"+k, JSON.stringify(v)); } catch {} }
 };
-let book = 1, cur = null, picked = -1, seen = new Set();
+let book = 1, cur = null, picked = -1, myReason = "", myOther = "";
+const OTHER = 99; // '기타(직접 쓰기)' 선택
 
 function setColor(c){ document.documentElement.style.setProperty("--c", c || "#7b4fd6"); }
-function steps(n){ return `<div class="step">${[1,2,3,4].map(i=>`<i class="${i<=n?"on":""}"></i>`).join("")}</div>`; }
+function steps(n){ return `<div class="step">${[1,2,3,4,5].map(i=>`<i class="${i<=n?"on":""}"></i>`).join("")}</div>`; }
+function toast(msg){
+  const d = document.createElement("div");
+  d.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2b2b3a;color:#fff;padding:12px 18px;border-radius:12px;font-weight:700;z-index:9;max-width:90%;text-align:center";
+  d.textContent = msg; document.body.appendChild(d); setTimeout(()=>d.remove(), 2800);
+}
+function choiceLabel(){ return picked === OTHER ? "✍️ " + myOther : (cur.choices[picked]||{}).label || ""; }
 
-/* ① 강좌 고르기 */
+/* ① 첫 화면 : 직접 주제 쓰기 + 강좌 고르기 */
 function home(){
   cur = null; setColor(); window.scrollTo(0,0);
   const list = SCENARIOS.filter(s => s.book === book);
   app.innerHTML = `
-    <div class="tabs">
+    <div class="panel" style="--c:#7b4fd6">
+      <b style="font-size:1.15rem">✍️ 내가 직접 만드는 '만약에'</b>
+      <p style="margin:4px 0 8px;color:#666;font-size:.92rem">궁금한 역사 장면을 직접 골라 보세요. 예: 만약 세종이 훈민정음을 만들지 않았다면?</p>
+      <input id="myTopic" maxlength="80" placeholder="만약 ○○○했다면?">
+      <div class="row"><button class="btn" onclick="startCustom()">이 주제로 시작 →</button></div>
+    </div>
+    <div class="tabs" style="margin-top:18px">
       <button class="${book===1?"on":""}" onclick="book=1;home()">한국사 1</button>
       <button class="${book===2?"on":""}" onclick="book=2;home()">한국사 2</button>
     </div>
-    <p style="text-align:center;margin:0 0 14px;color:#666">오늘 배운 강좌를 골라 보세요. 갈림길을 고르고, 실제 역사와 비교하고, 학습지 Quest 2를 정리해요.</p>
+    <p style="text-align:center;margin:0 0 14px;color:#666">또는 오늘 배운 강좌의 갈림길을 골라 보세요.</p>
     <div class="grid">${list.map(s => `
       <button class="card" style="--c:${s.c}" onclick="open_('${s.id}')">
-        ${store.get(s.id+":done") ? '<span class="done">✔ 정리 완료</span>' : ""}
+        ${store.get(s.id+":done") ? `<span class="done">✔ ${esc(store.get(s.id+":done"))}</span>` : ""}
         <span class="em">${s.emoji}</span><span class="no">${s.no}</span>
         <b>${esc(s.title)}</b><span>${esc(s.lecture)}</span>
       </button>`).join("")}</div>`;
 }
 
-/* ② 장면과 갈림길 */
+/* 직접 만든 주제 : 실제 상황·키워드를 학생이 채움 */
+function startCustom(){
+  let t = document.getElementById("myTopic").value.trim();
+  if (t.length < 5) { toast("주제를 조금 더 자세히 써 주세요! (예: 만약 ○○○했다면?)"); return; }
+  if (!/^만약/.test(t)) t = "만약 " + t;
+  if (!/\?$/.test(t)) t += "?";
+  cur = { id:"custom", custom:true, no:"내 주제", lecture:"직접 만든 '만약에'", emoji:"✍️", guide:"나", c:"#7b4fd6",
+          title:t, question:t, scene:"", real:"", keywords:[], choices:[] };
+  picked = OTHER; myReason = ""; myOther = "";
+  const saved = store.get("custom") || {};
+  setColor(cur.c); window.scrollTo(0,0);
+  app.innerHTML = `
+    ${steps(1)}
+    <div class="panel">
+      <div class="q">🔀 ${esc(t)}</div>
+      <label>📜 실제로는 어떤 상황이었나요? <small>(교과서·학습지에서 찾아 쓰기)</small></label>
+      <textarea id="c_scene" rows="3" placeholder="언제, 누가, 무엇을 했는지 써요.">${esc(saved.scene||"")}</textarea>
+      <label>🔮 내가 예상하는 '만약에'의 결과는? <small>(내 선택)</small></label>
+      <textarea id="c_pick" rows="2" placeholder="그랬다면 ○○○했을 거야.">${esc(saved.pick||"")}</textarea>
+      <label>💭 그렇게 생각하는 이유는?</label>
+      <textarea id="c_reason" rows="3" placeholder="왜냐하면 … 때문이다. 그래서 …">${esc(saved.reason||"")}</textarea>
+      <label>📜 실제 역사는 어떻게 흘러갔나요? <small>(찾아서 정리)</small></label>
+      <textarea id="c_real" rows="3" placeholder="실제로는 …">${esc(saved.real||"")}</textarea>
+      <label>🔑 핵심 키워드 3~5개 <small>(쉼표로 구분)</small></label>
+      <input id="c_kw" placeholder="예: 세종, 집현전, 훈민정음, 1446년" value="${esc(saved.kw||"")}">
+      <div class="row"><button class="btn ghost" onclick="home()">← 처음으로</button><button class="btn" onclick="customNext()">✏️ 학습지 정리하기 →</button></div>
+    </div>`;
+}
+function customNext(){
+  const v = id => document.getElementById(id).value.trim();
+  const o = { scene:v("c_scene"), pick:v("c_pick"), reason:v("c_reason"), real:v("c_real"), kw:v("c_kw") };
+  if (o.scene.length < 10 || o.pick.length < 5 || o.reason.length < 10 || o.real.length < 10) { toast("실제 상황, 예상, 이유, 실제 역사를 모두 한두 문장 이상 채워 주세요!"); return; }
+  store.set("custom", o);
+  cur.scene = o.scene; cur.real = o.real; myOther = o.pick; myReason = o.reason;
+  cur.keywords = o.kw.split(/[,，、]/).map(x=>x.trim()).filter(Boolean).slice(0,8);
+  sheet();
+}
+
+/* ② 강좌 시나리오 : 장면과 갈림길(+기타) */
 function open_(id){
-  cur = SCENARIOS.find(s => s.id === id); picked = -1; seen = new Set();
+  cur = SCENARIOS.find(s => s.id === id); picked = -1; myReason = ""; myOther = "";
+  const saved = store.get(cur.id) || {};
   setColor(cur.c); window.scrollTo(0,0);
   app.innerHTML = `
     ${steps(1)}
@@ -120,134 +172,176 @@ function open_(id){
       <div class="who"><div class="ava">${cur.emoji}</div>
         <div class="bubble"><span class="tag real-tag">📜 실제 상황</span><br><b>${esc(cur.guide)}</b> : ${esc(cur.scene)}</div></div>
       <div class="q">🔀 ${esc(cur.question)}</div>
-      <p style="margin:0 0 6px;color:#666;font-size:.92rem">내 생각과 가장 가까운 길을 골라 보세요.</p>
-      ${cur.choices.map((c,i)=>`<button class="choice" onclick="pick(${i})">${esc(c.label)}</button>`).join("")}
-    </div>
-    <div class="row"><button class="btn ghost" onclick="home()">← 다른 강좌</button></div>`;
+      <p style="margin:0 0 6px;color:#666;font-size:.92rem">내 생각과 가장 가까운 길을 고르고, <b>이유</b>도 써 주세요.</p>
+      ${cur.choices.map((c,i)=>`<button class="choice" data-i="${i}" onclick="choose(${i})">${esc(c.label)}</button>`).join("")}
+      <button class="choice" data-i="${OTHER}" onclick="choose(${OTHER})">✍️ 기타 — 내 생각을 직접 쓸래요</button>
+      <div id="otherBox" style="display:none"><label>✍️ 내가 생각한 결과</label><input id="otherIn" maxlength="120" placeholder="그랬다면 ○○○했을 거야." value="${esc(saved.other||"")}"></div>
+      <div id="reasonBox" style="display:none"><label>💭 이 길을 고른 이유는?</label>
+        <textarea id="reasonIn" rows="3" placeholder="왜냐하면 … 때문이다. 그래서 …">${esc(saved.reason||"")}</textarea></div>
+      <div class="row"><button class="btn ghost" onclick="home()">← 처음으로</button><button class="btn" id="goBtn" style="display:none" onclick="confirmPick()">🔮 결과 보기 →</button></div>
+    </div>`;
+}
+function choose(i){
+  picked = i;
+  document.querySelectorAll(".choice").forEach(b => b.classList.toggle("picked", +b.dataset.i === i));
+  document.getElementById("otherBox").style.display = i === OTHER ? "block" : "none";
+  document.getElementById("reasonBox").style.display = "block";
+  document.getElementById("goBtn").style.display = "inline-block";
+  (i === OTHER ? document.getElementById("otherIn") : document.getElementById("reasonIn")).focus();
+}
+function confirmPick(){
+  myReason = document.getElementById("reasonIn").value.trim();
+  myOther = picked === OTHER ? document.getElementById("otherIn").value.trim() : "";
+  if (picked === OTHER && myOther.length < 5) { toast("기타를 골랐다면 내가 생각한 결과를 써 주세요!"); return; }
+  if (myReason.length < 10) { toast("고른 이유를 한두 문장으로 써 주세요! (왜냐하면 …)"); return; }
+  const saved = store.get(cur.id) || {}; Object.assign(saved, { pick:picked, other:myOther, reason:myReason }); store.set(cur.id, saved);
+  dream();
 }
 
-/* ③ 상상 전개 */
-function pick(i){
-  picked = i; seen.add(i); const c = cur.choices[i]; window.scrollTo(0,0);
-  const others = cur.choices.map((x,k)=>k).filter(k=>k!==i);
+/* ③ 상상 속 역사 */
+function dream(){
+  window.scrollTo(0,0);
+  const c = picked === OTHER ? null : cur.choices[picked];
   app.innerHTML = `
     ${steps(2)}
     <div class="panel">
       <div class="q">🔀 ${esc(cur.question)}</div>
-      <div class="fixed">내가 고른 길 : ${esc(c.label)}</div>
-      <div class="dream" style="margin-top:12px"><span class="tag dream-tag">🔮 상상 속 역사 (실제로 일어난 일이 아니에요)</span><br>${esc(c.story)}
-        <div class="think">🤔 생각해 볼 점 : ${esc(c.think)}</div></div>
-      <div class="row">
-        ${others.map(k=>`<button class="btn ghost" onclick="pick(${k})">다른 길 : ${esc(cur.choices[k].label)}</button>`).join("")}
-        <button class="btn" onclick="real()">📜 실제 역사 확인하기 →</button>
-      </div>
+      <div class="fixed">내가 고른 길 : ${esc(choiceLabel())}</div>
+      <div class="fixed" style="margin-top:6px;background:#fff8e1">💭 내 이유 : ${esc(myReason)}</div>
+      ${c ? `<div class="dream" style="margin-top:12px"><span class="tag dream-tag">🔮 상상 속 역사 (실제로 일어난 일이 아니에요)</span><br>${esc(c.story)}
+        <div class="think">🤔 생각해 볼 점 : ${esc(c.think)}</div></div>`
+          : `<div class="dream" style="margin-top:12px"><span class="tag dream-tag">🔮 내가 만든 상상</span><br>${esc(myOther)}
+        <div class="think">🤔 생각해 볼 점 : 내 상상이 실제로 일어나려면 당시 어떤 조건이 필요했을까?</div></div>`}
+      <div class="row"><button class="btn ghost" onclick="open_('${cur.id}')">← 다시 고르기</button><button class="btn" onclick="real()">📜 실제 역사 확인하기 →</button></div>
     </div>`;
 }
 
 /* ④ 실제 역사와 비교 */
 function real(){
-  window.scrollTo(0,0); const c = cur.choices[picked];
+  window.scrollTo(0,0);
   app.innerHTML = `
     ${steps(3)}
     <div class="panel">
       <div class="real"><span class="tag real-tag">📜 실제 역사</span><br>${esc(cur.real)}</div>
       <div class="compare">
-        <div style="background:#fbf6ff;border:2px dashed #b39ddb"><b>🔮 내가 상상한 역사</b><br>${esc(c.label)}</div>
+        <div style="background:#fbf6ff;border:2px dashed #b39ddb"><b>🔮 내가 상상한 역사</b><br>${esc(choiceLabel())}</div>
         <div style="background:#eef6ff;border:2px solid #90caf9"><b>📜 실제로 일어난 역사</b><br>${esc(cur.real.split(". ")[0])}.</div>
       </div>
-      <p style="margin:14px 0 0;font-weight:800">🔑 이 강좌의 키워드 — 정리할 때 써 보세요! (하나 쓸 때마다 🪙 1개)</p>
+      <p style="margin:14px 0 0;font-weight:800">🔑 이 강좌의 키워드 — 정리할 때 써 보세요!</p>
       <div class="kw">${cur.keywords.map(k=>`<span>${esc(k)}</span>`).join("")}</div>
-      <div class="row">
-        <button class="btn ghost" onclick="pick(${picked})">← 상상 다시 보기</button>
-        <button class="btn" onclick="sheet()">✏️ 학습지 Quest 2 정리하기 →</button>
-      </div>
+      <div class="row"><button class="btn ghost" onclick="dream()">← 상상 다시 보기</button><button class="btn" onclick="sheet()">✏️ 학습지 Quest 2 정리하기 →</button></div>
     </div>`;
 }
 
-/* ⑤ 학습지 Quest 2 정리 (학습지 칸과 같은 순서) */
+/* ⑤ 학습지 Quest 2 정리 */
+const Q3 = "이 갈림길이 오늘 우리에게 주는 의미는 무엇일까?";
 const FIELDS = [
-  ["name","학번·이름 (또는 모둠)", "input", ""],
-  ["a1","1차 질문 · 답변 정리", "area", "내가 고른 길대로라면 역사는 어떻게 흘러갔을까? 상상 전개를 내 말로 정리해요."],
-  ["a2","2차 질문 · 답변 정리", "area", "실제 역사는 왜 그렇게 흘러가지 않았을까? 실제 역사에서 근거를 찾아 써요."],
-  ["a3","3차 질문 · 답변 정리", "area", "이 갈림길이 오늘 우리에게 주는 의미는 무엇일까? (현재와 연결하기)"],
-  ["new","활동 소감 · 새롭게 알게 되었거나 흥미로운 내용", "area", ""],
-  ["qa","궁금한 내용 Q&A", "area", "Q. 더 알고 싶은 점  /  A. 찾아본 답"]
+  ["name","학번·이름 (또는 모둠)","input",""],
+  ["a1","1차 질문 · 답변 정리","area","내가 고른 길대로라면 역사는 어떻게 흘러갔을까? 이유와 함께 정리해요."],
+  ["a2","2차 질문 · 답변 정리","area","실제 역사는 왜 그렇게 흘러가지 않았을까? 실제 사실(연도, 인물, 사건)을 근거로 써요."],
+  ["a3","3차 질문 · 답변 정리","area","이 갈림길이 오늘 우리에게 주는 의미는? (현재와 연결하기)"],
+  ["new","활동 소감 · 새롭게 알게 되었거나 흥미로운 내용","area",""],
+  ["qa","궁금한 내용 Q&A","area","Q. 더 알고 싶은 점  /  A. 찾아본 답"]
 ];
-function questions(){
-  return { q1: cur.question, q3:"이 갈림길이 오늘 우리에게 주는 의미는 무엇일까?" };
-}
 function sheet(){
   window.scrollTo(0,0);
-  const saved = store.get(cur.id) || {}; const Q = questions();
-  if (!saved.name) saved.name = store.get("name") || "";
+  const saved = (store.get(cur.id+":sheet") || {}); if (!saved.name) saved.name = store.get("name") || "";
+  const qOf = k => k==="a1" ? "1차 질문 : " + cur.question : k==="a2" ? "2차 질문 : 왜 실제 역사는 다르게 흘러갔을까?" : k==="a3" ? "3차 질문 : " + Q3 : "";
   app.innerHTML = `
     ${steps(4)}
     <div class="panel">
       <b style="font-size:1.15rem">✏️ Quest 2 · 핵심 대화 질문 정리하기</b>
-      <p style="margin:4px 0 0;color:#666;font-size:.9rem">학습지 칸과 같은 순서예요. 다 쓰면 정리 카드를 만들어 패들렛에 올리세요.</p>
-      ${FIELDS.map(([k,t,type,ph])=>{
-        const fq = k==="a1"?Q.q1:k==="a2"?"왜 실제 역사는 다르게 흘러갔을까?":k==="a3"?Q.q3:"";
-        return `<label>${t}</label>${fq?`<div class="fixed">${k==="a1"?"1차":k==="a2"?"2차":"3차"} 질문 : ${esc(fq)}</div>`:""}
-        ${type==="input"?`<input id="f_${k}" value="${esc(saved[k]||"")}" placeholder="예: 20301 홍길동">`
-                        :`<textarea id="f_${k}" rows="${k==="new"||k==="qa"?2:3}" placeholder="${esc(ph)}">${esc(saved[k]||"")}</textarea>`}`;}).join("")}
-      <p style="margin:16px 0 4px"><span class="coin" id="coin">🪙 0</span> <span style="color:#666;font-size:.9rem">— 정리에 쓴 키워드</span></p>
-      <div class="kw" id="kw"></div>
-      <div class="row">
-        <button class="btn ghost" onclick="real()">← 실제 역사</button>
-        <button class="btn" onclick="makeCard()">🪪 정리 카드 만들기 →</button>
-      </div>
+      <p style="margin:4px 0 0;color:#666;font-size:.9rem">논리적으로 쓸수록 등급이 올라가요. 👑 역사논리왕에 도전!</p>
+      ${FIELDS.map(([k,t,type,ph])=>`<label>${t}</label>${qOf(k)?`<div class="fixed">${esc(qOf(k))}</div>`:""}
+        ${type==="input" ? `<input id="f_${k}" value="${esc(saved[k]||"")}" placeholder="예: 20301 홍길동">`
+                         : `<textarea id="f_${k}" rows="${k==="new"||k==="qa"?2:3}" placeholder="${esc(ph)}">${esc(saved[k]||"")}</textarea>`}`).join("")}
+      <div id="live" style="margin-top:16px"></div>
+      <div class="row"><button class="btn ghost" onclick="${cur.custom?"startCustomBack()":"real()"}">← 이전</button><button class="btn" onclick="finish()">🏅 등급 받고 정리 카드 만들기 →</button></div>
     </div>`;
   FIELDS.forEach(([k])=>document.getElementById("f_"+k).addEventListener("input", saveSheet));
   saveSheet();
 }
+function startCustomBack(){ const t = cur.title; startCustom_fill(t); }
+function startCustom_fill(t){ home(); document.getElementById("myTopic").value = t; startCustom(); }
 function readSheet(){ const o={}; FIELDS.forEach(([k])=>{ const el=document.getElementById("f_"+k); if(el) o[k]=el.value; }); return o; }
-function hits(o){ const text = ["a1","a2","a3","new","qa"].map(k=>o[k]||"").join(" ").replace(/\s/g,""); return cur.keywords.filter(k=>text.includes(k.replace(/\s/g,""))); }
 function saveSheet(){
-  const o = readSheet(); o.pick = picked; store.set(cur.id, o); if (o.name) store.set("name", o.name);
-  const h = hits(o);
-  document.getElementById("coin").textContent = "🪙 " + h.length;
-  document.getElementById("kw").innerHTML = cur.keywords.map(k=>`<span class="${h.includes(k)?"hit":""}">${esc(k)}</span>`).join("");
+  const o = readSheet(); store.set(cur.id+":sheet", o); if (o.name) store.set("name", o.name);
+  const r = grade(o);
+  document.getElementById("live").innerHTML = `<b>지금 등급 미리보기 :</b> ${r.badge} <span style="color:#888">(${r.score}/${r.max}점)</span>`;
 }
 
-/* ⑥ 정리 카드 (캡처·저장해서 패들렛에) */
-function makeCard(){
-  const o = store.get(cur.id) || readSheet();
-  if (!["a1","a2","a3"].every(k => (o[k]||"").trim().length >= 5)) { alertBox("1·2·3차 답변을 조금 더 채워 주세요! (각각 한두 문장 이상)"); return; }
-  store.set(cur.id+":done", true); window.scrollTo(0,0);
-  const Q = questions(); const h = hits(o); const c = cur.choices[o.pick >= 0 ? o.pick : picked] || cur.choices[0];
+/* ── 논리 등급 : 학습지 성향(이유·근거·실제와 비교·현재와 연결)을 기준으로 채점 ── */
+const CAUSE = ["왜냐하면","때문","그래서","따라서","그러므로","결과","덕분","탓","이유","므로","면서","니까"];
+const COUNTER = ["하지만","그러나","반면","물론","그런데","오히려","한편"];
+const NOW = ["오늘","지금","현재","우리","요즘","나에게","나는","사회"];
+const REAL = ["실제","당시","사실","결국","역사적"];
+function count(text, words){ return words.reduce((n,w)=>n+(text.split(w).length-1),0); }
+function grade(o){
+  const all = [myReason, o.a1, o.a2, o.a3].join(" ");
+  const flat = all.replace(/\s/g,"");
+  const kwHit = cur.keywords.filter(k => flat.includes(k.replace(/\s/g,"")));
+  const years = (all.match(/\d{3,4}\s*년/g) || []).length;
+  const items = [
+    ["💭 선택한 이유를 구체적으로 썼어요", myReason.length >= 25 ? 2 : myReason.length >= 10 ? 1 : 0, 2, "이유를 '왜냐하면 ~ 때문이다'처럼 더 자세히 써 보세요."],
+    ["🔗 원인과 결과를 이어서 설명했어요", Math.min(2, Math.floor(count(all, CAUSE) / 2)), 2, "'때문에', '그래서', '그 결과' 같은 말로 원인→결과를 이어 보세요."],
+    ["📌 역사적 근거(키워드·연도·인물)를 썼어요", Math.min(2, (kwHit.length >= 4 ? 2 : kwHit.length >= 2 ? 1 : 0) + (years ? 1 : 0)), 2, "키워드나 연도, 인물 이름을 근거로 넣어 보세요."],
+    ["📜 실제 역사와 비교했어요", (o.a2||"").trim().length >= 25 && count(o.a2, REAL) >= 1 ? 1 : 0, 1, "2차 답변에 '실제로는 ~'처럼 실제 역사와 비교해 보세요."],
+    ["🧭 현재와 연결했어요", (o.a3||"").trim().length >= 20 && count(o.a3, NOW) >= 1 ? 1 : 0, 1, "3차 답변에 오늘 우리 삶과 이어지는 점을 써 보세요."],
+    ["⚖️ 다른 가능성(반대쪽)도 생각했어요", count(all, COUNTER) >= 1 ? 1 : 0, 1, "'하지만 ~일 수도 있다'처럼 다른 가능성도 생각해 보세요."],
+    ["✍️ 1·2·3차 답변을 충실히 채웠어요", ["a1","a2","a3"].every(k => (o[k]||"").trim().length >= 30) ? 1 : 0, 1, "1·2·3차 답변을 각각 두 문장 이상 써 보세요."]
+  ];
+  const score = items.reduce((n,x)=>n+x[1],0), max = items.reduce((n,x)=>n+x[2],0);
+  const tier = score >= 8 ? 1 : score >= 5 ? 2 : 3;
+  const badge = tier === 1 ? "👑 1등급 · 역사논리왕" : tier === 2 ? "🎩 2등급 · 역사논리귀족" : "🧺 3등급 · 역사논리노비";
+  return { score, max, tier, badge, items, kwHit };
+}
+
+/* ⑥ 등급 + 정리 카드 */
+function finish(){
+  const o = readSheet();
+  if (!["a1","a2","a3"].every(k => (o[k]||"").trim().length >= 5)) { toast("1·2·3차 답변을 조금 더 채워 주세요!"); return; }
+  const r = grade(o); store.set(cur.id+":done", r.badge.split(" · ")[1]);
+  window.scrollTo(0,0);
+  const tierColor = ["","#c99700","#7b4fd6","#8d6e63"][r.tier];
+  const tips = r.items.filter(x => x[1] < x[2]).map(x => x[3]);
   app.innerHTML = `
+    ${steps(5)}
+    <div class="panel" style="text-align:center;border-color:${tierColor}">
+      <div style="font-size:3rem">${r.badge.split(" ")[0]}</div>
+      <div style="font-size:1.6rem;font-weight:900;color:${tierColor}">${r.badge.split(" ").slice(1).join(" ")}</div>
+      <div style="color:#777;margin-top:4px">논리 점수 ${r.score} / ${r.max}점 · 8점 이상 왕, 5~7점 귀족, 4점 이하 노비</div>
+      <div style="text-align:left;margin-top:14px">${r.items.map(x=>`<div style="padding:5px 0;border-bottom:1px dashed #eee">${x[1]>=x[2]?"✅":x[1]>0?"🔸":"⬜"} ${x[0]} <span style="float:right;color:#888">${x[1]}/${x[2]}</span></div>`).join("")}</div>
+      ${tips.length ? `<div style="text-align:left;background:#fff8e1;border-radius:12px;padding:10px 12px;margin-top:12px"><b>⬆️ 등급을 올리려면</b><br>${tips.map(t=>"· "+esc(t)).join("<br>")}</div>` : `<p style="font-weight:800;color:${tierColor}">완벽해요! 진정한 역사논리왕 👑</p>`}
+      ${r.tier > 1 ? `<div class="row" style="justify-content:center"><button class="btn ghost" onclick="sheet()">✏️ 고쳐서 등급 올리기</button></div>` : ""}
+    </div>
     <div id="card">
       <h3>${cur.emoji} ${esc(cur.title)}</h3>
-      <div class="meta">${esc(cur.no)}. ${esc(cur.lecture)} · ${esc(o.name||"이름 없음")} · 🪙 키워드 ${h.length}개 · ${new Date().toLocaleDateString("ko-KR")}</div>
+      <div class="meta">${esc(cur.no)} · ${esc(cur.lecture)} · ${esc(o.name||"이름 없음")} · ${new Date().toLocaleDateString("ko-KR")}</div>
+      <div style="display:inline-block;background:${tierColor};color:#fff;border-radius:20px;padding:4px 12px;font-weight:900">${r.badge} (${r.score}/${r.max})</div>
       <dl>
-        <dt>🔀 내가 고른 갈림길</dt><dd>${esc(c.label)}</dd>
-        <dt>1차 질문 · ${esc(Q.q1)}</dt><dd>${esc(o.a1)}</dd>
+        <dt>🔀 내가 고른 갈림길</dt><dd>${esc(choiceLabel())}</dd>
+        <dt>💭 고른 이유</dt><dd>${esc(myReason)}</dd>
+        <dt>1차 질문 · ${esc(cur.question)}</dt><dd>${esc(o.a1)}</dd>
         <dt>2차 질문 · 왜 실제 역사는 다르게 흘러갔을까?</dt><dd>${esc(o.a2)}</dd>
-        <dt>3차 질문 · ${esc(Q.q3)}</dt><dd>${esc(o.a3)}</dd>
+        <dt>3차 질문 · ${esc(Q3)}</dt><dd>${esc(o.a3)}</dd>
         ${o.new?`<dt>💡 새롭게 알게 된 점</dt><dd>${esc(o.new)}</dd>`:""}
         ${o.qa?`<dt>❓ 궁금한 내용 Q&A</dt><dd>${esc(o.qa)}</dd>`:""}
-        <dt>🔑 사용한 키워드</dt><dd>${h.length ? h.map(esc).join(", ") : "—"}</dd>
+        <dt>🔑 사용한 키워드</dt><dd>${r.kwHit.length ? r.kwHit.map(esc).join(", ") : "—"}</dd>
       </dl>
       <p style="margin:12px 0 0;font-size:.78rem;color:#999">역사는 삶이다! · 춘쌤의 한국사 · 만약에 한국사</p>
     </div>
     <div class="row" style="justify-content:center">
       <button class="btn" onclick="saveImg()">🖼️ 카드 이미지로 저장</button>
-      <button class="btn ghost" onclick="sheet()">✏️ 고치기</button>
-      <button class="btn ghost" onclick="home()">🏠 다른 강좌</button>
+      <button class="btn ghost" onclick="home()">🏠 처음으로</button>
     </div>
-    <p class="note">저장한 이미지(또는 화면 캡처)를 패들렛에 올리면 끝! 쓴 내용은 이 기기에 저장돼요.</p>`;
+    <p class="note">저장한 이미지(또는 화면 캡처)를 패들렛에 올리면 끝! 등급은 글의 이유·근거·비교·현재 연결을 보고 자동으로 매겨져요.</p>`;
 }
 function saveImg(){
   const el = document.getElementById("card");
-  if (!window.html2canvas) { alertBox("이미지 저장이 안 되면 화면을 캡처해서 올려 주세요."); return; }
+  if (!window.html2canvas) { toast("이미지 저장이 안 되면 화면을 캡처해서 올려 주세요."); return; }
   html2canvas(el, { scale: 2, backgroundColor: "#ffffff" }).then(cv => {
     const a = document.createElement("a"); a.download = `만약에한국사_${cur.no}.png`; a.href = cv.toDataURL("image/png"); a.click();
-  }).catch(() => alertBox("이미지 저장이 안 되면 화면을 캡처해서 올려 주세요."));
-}
-function alertBox(msg){
-  const d = document.createElement("div");
-  d.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2b2b3a;color:#fff;padding:12px 18px;border-radius:12px;font-weight:700;z-index:9;max-width:90%";
-  d.textContent = msg; document.body.appendChild(d); setTimeout(()=>d.remove(), 2600);
+  }).catch(() => toast("이미지 저장이 안 되면 화면을 캡처해서 올려 주세요."));
 }
 
 /* 주소 뒤에 #h1-09 처럼 붙이면 그 강좌로 바로 열려요 */
