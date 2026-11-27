@@ -134,8 +134,8 @@
     <h3 style="margin:10px 0 4px">Quest 2 · 챗봇과 함께 역사 속으로 (택1)</h3>
     <p class="lead">학습지의 Quest 2 QR과 같은 활동이에요. 셋 중 하나를 골라 1·2·3차 질문을 정리해요.</p>
     <div class="q3" style="margin-bottom:22px">
-      <a href="https://m.site.naver.com/1Jtxh" target="_blank" rel="noopener" style="background:#1565c0">
-        <div class="ic">🎤</div><b>역사 인물 가상 인터뷰</b><span>역사 속 인물에게 직접 묻고 답을 들어요</span><em>시작하기 ▶</em></a>
+      <a href="interview/" target="_blank" rel="noopener" style="background:#1565c0">
+        <div class="ic">🎤</div><b>역사 인물 가상 인터뷰 <small style="background:#ffd54f;color:#333;border-radius:8px;padding:1px 6px;font-size:.7rem">NEW</small></b><span>기자가 되어 인물에게 묻고, 내 말로 기사를 써요</span><em>시작하기 ▶</em></a>
       <a href="what-if/" target="_blank" rel="noopener" style="background:#7b4fd6">
         <div class="ic">🔀</div><b>만약에 한국사 <small style="background:#ffd54f;color:#333;border-radius:8px;padding:1px 6px;font-size:.7rem">NEW</small></b><span>역사의 갈림길을 골라 상상하고 실제 역사와 비교해요</span><em>시작하기 ▶</em></a>
       <a href="debate/" target="_blank" rel="noopener" style="background:#00897b">
@@ -280,6 +280,8 @@ const WHATIF = Object.fromEntries(["h1-01","h1-02","h1-03","h1-04","h1-05","h1-0
 
 const DEBATE = Object.fromEntries(["h1-03","h1-04","h1-05","h1-06","h1-07","h1-08","h1-09","h1-11","h1-13","h2-04","h2-05","h2-07"].map(id => [id + ".pdf", id]));
 
+const INTERVIEW = Object.fromEntries(["h1-03","h1-04","h1-05","h1-06","h1-07","h1-08","h1-09","h1-10","h1-11","h1-13","h2-02","h2-03","h2-04","h2-07"].map(id => [id + ".pdf", id]));
+
 /* ── 화면 그리기 ── */
 function station(s, i, openFirst){
   const e = ERAS[s.era];
@@ -289,6 +291,7 @@ function station(s, i, openFirst){
       <div class="t"><b>${l.t}</b>${l.p ? `<i>교과서 ${l.p}쪽</i>` : ""}${l.q ? `<q>${l.q}</q>` : ""}</div>
       ${WHATIF[l.f] ? `<a class="btn" href="what-if/#${WHATIF[l.f]}" target="_blank" rel="noopener">🔀 만약에</a>` : ""}
       ${DEBATE[l.f] ? `<a class="btn" href="debate/#${DEBATE[l.f]}" target="_blank" rel="noopener">⚖️ 토론</a>` : ""}
+      ${INTERVIEW[l.f] ? `<a class="btn" href="interview/#${INTERVIEW[l.f]}" target="_blank" rel="noopener">🎤 인터뷰</a>` : ""}
       <a class="btn" href="files/${l.f}" target="_blank" rel="noopener">학습지 PDF</a>
     </div>`).join("");
   return `
